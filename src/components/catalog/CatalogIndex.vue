@@ -20,7 +20,7 @@
             <b-container fluid>
                 <header></header>
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="3" class="pr-2">
                         <b-card no-body class="mb-0 updates daily-feeds">
                             <b-card-header style="background:transparent;" class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex justify-content-left align-items-center">
@@ -67,22 +67,24 @@
                             <b-collapse visible id="collapse-categories" class="mt-2">
                                 <div class="feed-box">
                                     <ul class="feed-elements list-unstyled">
-                                        <li class="clearfix" v-for="category in categorylists" :key="category.catgroup_id">
-                                            <div class="feed d-flex justify-content-between">
-                                                <div class="feed-body d-flex justify-content-between">
-                                                    <a class="feed-profile" href="#">
-                                                        <img :src="defaultavatar" class="img-fluid rounded">
-                                                    </a>
-                                                    <div class="content">
-                                                        <strong>{{category.identifier}}</strong>
-                                                        <small>{{category.count}} {{category.count == 1 ? "Product Contained" : "Products contained"}} </small>
+                                        <vue-custom-scrollbar class="category-scroll-area" :settings="settings">
+                                            <li class="clearfix" v-for="category in categorylists" :key="category.catgroup_id">
+                                                <div class="feed d-flex justify-content-between">
+                                                    <div class="feed-body d-flex justify-content-between">
+                                                        <a class="feed-profile" href="#">
+                                                            <img :src="defaultavatar" class="img-fluid rounded">
+                                                        </a>
+                                                        <div class="content">
+                                                            <strong>{{category.identifier}}</strong>
+                                                            <small>{{category.count}} {{category.count == 1 ? "Product Contained" : "Products contained"}} </small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="date">
+                                                        <!-- <small>edit</small> -->
                                                     </div>
                                                 </div>
-                                                <div class="date">
-                                                    <!-- <small>edit</small> -->
-                                                </div>
-                                            </div>
-                                        </li>
+                                            </li>
+                                        </vue-custom-scrollbar>
                                     </ul>
                                 </div>
                             </b-collapse>
@@ -613,8 +615,10 @@
 <script>
 import requester from "@/services/requester"
 import * as JQuery from "jquery"
+import VueCustomScrollbar from 'vue-custom-scrollbar'
 export default {
     name:"catalogindex",
+    components:{VueCustomScrollbar},
     data(){
         return {
             searchTerm:'',
@@ -627,6 +631,7 @@ export default {
             filter:null,
             defaultoption:true,
             attrvaluevisible:false,
+            settings: {maxScrollbarLength: 100},
             
             relfields:["container_product","content_product","quantity"],
             relitems:[],
@@ -669,15 +674,15 @@ export default {
                 published:"Publish",parent_catalog:null,
             },
             catentry:{
-                member_id:requester.getfromlocalstorage("language_id"),
-                language_id:requester.getfromlocalstorage("employer"),itemspc_id:null,catenttype_id:'Item',
+                language_id:requester.getfromlocalstorage("language_id"),
+                member_id:requester.getfromlocalstorage("employer"),itemspc_id:null,catenttype_id:'Item',
                 partnumber:null,mfpartnumber:null,mfname:null,currency:null,listprice:null,
                 catalog_id:null,catgroup_id:null,lastupdate:null,endofservicedate:null,
                 name:null,shortdescription:null,fullimage:null,available:null,published:1,availabilitydate:null
             },
             catentrycomposite:{
-                member_id:requester.getfromlocalstorage("language_id"),
-                language_id:requester.getfromlocalstorage("employer"),
+                language_id:requester.getfromlocalstorage("language_id"),
+                member_id:requester.getfromlocalstorage("employer"),
                 itemspc_id:null,catenttype_id:'Bundle',partnumber:null,mfpartnumber:null,mfname:null,
                 currency:null,listprice:null,catalog_id:null,catgroup_id:null,lastupdate:null,
                 endofservicedate:null,name:null,shortdescription:null,fullimage:null,available:null,
@@ -698,7 +703,8 @@ export default {
             },
             attrvaluefields:['show_details','attribute','type','value','action'],
             attrvalueitems:[{attr_id:null,attribute:null,type:null,attrtype_id:null,value:null}],
-            attrform:{attr_id:null,attrtype_id:null,value:null,catentry_id:null,usage:2,language_id:requester.getfromlocalstorage("language_id")},
+            attrform:{attr_id:null,attrtype_id:null,value:null,catentry_id:null,usage:2,
+            language_id:requester.getfromlocalstorage("language_id")},
             catentryitems:[],
             catentrysplits:[],
             combinedcatentries:[],
@@ -922,6 +928,7 @@ export default {
             const payload={...this.catentry}
             console.log(payload)
             requester.ajax_request("/api/v1.0/create_catentry","POST",this.ac_token,this.rf_token,true,payload).done(result => {
+                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.attrvaluefields=['show_details','attribute','type','value','action']
@@ -929,6 +936,7 @@ export default {
                 this.attrvaluevisible=true
                 this.catentryitems=result.catentryitems
                 this.attrform.catentry_id=result.entries[0].catentry_id
+                this.catentries=result.entries
             }).fail((jqXHR,textStatus,errorThrown) => {
                 console.log(jqXHR.responseJSON)
                 console.log(textStatus)

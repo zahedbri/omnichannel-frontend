@@ -116,6 +116,7 @@ export default {
         }
     },
     created(){
+        requester.clearlocalstorage()
         var ap_defaults=requester.ajax_request_no_tokens("/api/v1.0/default_password_policy","GET")
         ap_defaults.then(result => {
             // console.log(result)
@@ -136,9 +137,9 @@ export default {
             const payload={...this.orgsignup}
             // console.log(payload)
             requester.ajax_request_no_tokens("/api/v1.0/create_organization","POST",true,payload).done(result => {
+                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
-                // console.log(result)
                 requester.savetolocalstorage("access_token", result.access_token)
                 requester.savetolocalstorage("refresh_token", result.refresh_token)
                 requester.savetolocalstorage("user_id",result.user_id)

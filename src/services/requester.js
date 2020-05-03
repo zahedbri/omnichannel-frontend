@@ -40,6 +40,9 @@ export default {
 			})
 		}
 	},
+	clearlocalstorage(){
+		localStorage.clear()
+	},
 	savetolocalstorage(k, v) {
 		if (localStorage) {
 			localStorage.setItem(k, v)

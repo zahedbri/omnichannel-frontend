@@ -251,7 +251,7 @@
                                                                             </b-col>
                                                                             <b-col sm="4" md="4">
                                                                                 <div class="form-group mb-4">
-                                                                                    <label class="form-label">Tax Jurisdiction</label>
+                                                                                    <label class="form-label">Shipping Jurisdiction</label>
                                                                                     <b-form-select size="sm" @change.native="writerulecode" v-model="calrule.jurstgroup_id" :options="jurstgroupoptions" required></b-form-select>
                                                                                 </div>
                                                                             </b-col>
@@ -415,7 +415,7 @@
                 </b-row>
             </b-container>
         </section>
-        <b-modal ref="new-jg-modal" size="md" id="new-jg-modal" title="Tax Jurisdiction Group" hide-footer>
+        <b-modal ref="new-jg-modal" size="md" id="new-jg-modal" title="Shipping Jurisdiction Group" hide-footer>
             <b-container class="px-0">
                 <b-row>
                     <b-col cols="12" class="px-0">

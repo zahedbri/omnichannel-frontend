@@ -8,6 +8,8 @@
                         <b-dropdown variant="primary" size="sm" right text="Create">
                             <b-dropdown-item v-b-modal.discount-modal>Pricing Discount</b-dropdown-item>
                             <b-dropdown-item v-b-modal.shipmode-modal>Delivery Arrangements</b-dropdown-item>
+                            <b-dropdown-item @click="gotopath('/scaffolding/taxes')" >Tax Framework</b-dropdown-item>
+                            <b-dropdown-item @click="gotopath('/scaffolding/shipping')" >Shipping Framework</b-dropdown-item>
                         </b-dropdown>
                     </div>
                 </div>
@@ -304,6 +306,9 @@ export default {
         })
     },
     methods:{
+        gotopath(pth){
+            this.$router.push( {path:pth} )
+        },
         submitshipmode(){
             const payload={...this.shipmode}
             payload.code='SHP/'+this.shipmode.storeent_id+'/'+this.shipmode.ffmcenter_id+'/'+this.shipmode.jurstgroup_id

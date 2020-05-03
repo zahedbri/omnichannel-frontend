@@ -34,7 +34,7 @@
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text"><i class="fas fa-user-shield"></i></span>
                                             </div>
-                                            <input class="form-control" v-model="loginform.logonid" placeholder="Email or Phone" type="email">
+                                            <b-form-input class="form-control" :formatter="formatPhone" v-model="loginform.logonid" placeholder="Phone" type="text"></b-form-input>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -74,6 +74,7 @@
 
 <script>
 import requester from "@/services/requester"
+import libphonenumber from "google-libphonenumber"
 export default {
     name:"login",
     data(){
@@ -89,10 +90,21 @@ export default {
         }
     },
     created(){
+        requester.clearlocalstorage()
     },
     methods: {
+        formatPhone(value){
+            const PNF=libphonenumber.PhoneNumberFormat
+            const phoneUtil=libphonenumber.PhoneNumberUtil.getInstance()
+            const number=phoneUtil.parseAndKeepRawInput(value,'NG')
+            let phoneclearance=phoneUtil.isValidNumber(number)
+            if(phoneclearance){this.unclearedphone=false}
+            else if(phoneclearance==false){this.unclearedphone=true}
+            return phoneUtil.format(number,PNF.INTERNATIONAL)
+        },        
         organizationlogin(){
             const payload={...this.loginform}
+            requester.clearlocalstorage()
             requester.ajax_request_no_tokens("/api/v1.0/login_organization","POST",true,payload).done(result => {
                 requester.savetolocalstorage("access_token", result.access_token)
                 requester.savetolocalstorage("refresh_token", result.refresh_token)

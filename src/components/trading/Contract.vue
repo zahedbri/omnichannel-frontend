@@ -160,6 +160,10 @@
                                                                 <template v-slot:cell(price)="row">
                                                                     {{row.item.symbol}}{{row.item.price}}
                                                                 </template>
+                                                                <template v-slot:cell(offer)="row">
+                                                                    <span v-if="row.item.offer != null">{{row.item.symbol}}{{row.item.offer}}</span>
+                                                                    <span v-else-if="row.item.offer==null">Unavailable</span>
+                                                                </template>
                                                                 <template v-slot:cell(category)="row">
                                                                     <strike>{{row.item.category}}</strike>
                                                                 </template>
@@ -224,7 +228,7 @@
                                                                 <template v-slot:cell(_)="row">
                                                                     <div class="d-flex align-items-center justify-content-center">
                                                                         <b-button @click="removecustomitem(row)" class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="far fa-trash-alt"></i></b-button>
-                                                                        <b-button @click="editcustomitem" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
+                                                                        <b-button @click="editcustomitem(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
                                                                     </div>
                                                                 </template>
                                                                 <template v-slot:cell(offer)="row">
@@ -295,7 +299,7 @@
                                                                 </template>
                                                                 <template v-slot:cell(custom)="row">
                                                                     <span v-if="row.item.custom ==null">Unavailable</span>
-                                                                    <span v-else-if="row.item.custom !=null">{{row.item.symbol}}{{row.item.custom}}</span>
+                                                                    <span v-else-if="row.item.custom !=null">{{row.item.custom}}</span>
                                                                 </template>
                                                             </b-table>
                                                         </b-card-body>                                                        
@@ -359,10 +363,6 @@
                                                                     <span v-if="row.item.offer ==null">Unavailable</span>
                                                                     <span v-else-if="row.item.offer !=null">{{row.item.symbol}}{{row.item.offer}}</span>
                                                                 </template>
-                                                                <template v-slot:cell(custom)="row">
-                                                                    <span v-if="row.item.custom ==null">Unavailable</span>
-                                                                    <span v-else-if="row.item.custom !=null">{{row.item.symbol}}{{row.item.custom}}</span>
-                                                                </template>
                                                                 <template v-slot:cell(discount)="row">
                                                                     <span v-if="row.item.custom ==null">Unavailable</span>
                                                                     <span v-else-if="row.item.discount !=null">{{row.item.symbol}}{{row.item.discount}}</span>
@@ -386,7 +386,7 @@
                                                             <b-container fluid class="px-0">
                                                                 <b-row>
                                                                     <b-col sm="5">
-                                                                        <span class="text-dark text-xsmall">Under this contract, the following items are unavailable for sale.</span>
+                                                                        <span class="text-dark text-xsmall">Due to this contract, the following items are unavailable for sale.</span>
                                                                     </b-col>
                                                                     <b-col sm="7">
                                                                         <b-row class="d-flex justify-content-end align-items-center">
@@ -398,6 +398,7 @@
                                                                                         <option v-for="catentry in catlist" :key="catentry.catentry_id">{{catentry.name}}</option>
                                                                                     </datalist>
                                                                                 </template>
+                                                                                <b-button :disabled="exclusionitem==null" class="mr-1" variant="primary" v-b-tooltip.hover title="Apply" size="sm" type="button"><i class="fas fa-check"></i></b-button>
                                                                                 <b-button @click="submitproductexclusions" :disabled="exclusionitem==null" variant="primary" v-b-tooltip.hover title="Save" size="sm" type="button"><i class="fas fa-save"></i></b-button>
                                                                             </b-col>
                                                                             <b-col sm="3" class="d-flex justify-content-end pl-0">
@@ -632,11 +633,13 @@ export default {
             calcodes:[{value:null,text:"Select Discount"}],calcode_id:null,catgroupitems:[],catgroupfields:[],
             invitem:null,invitems:[],invfields:[],invcalcode_id:null,invitem_id:null,exclusionitem:null,inclusionitems:[],
             exclusionitems:[],exclusionfields:[],excategory_id:null,excatgroupitems:[],excatgroupfields:[],
+            categories_unprocessed:[],excludeditems:null,
         }
     },
     created(){
         var trade=requester.ajax_request("/api/v1.0/read_contract","POST",this.ac_token,this.rf_token,true,{language_id:requester.getfromlocalstorage("language_id"),trading_id:this.$route.params.trading_id})
         var langdata=trade.then(result => {
+            // console.log(result)
             this.deployed_store_id=result.store_id
             this.contractowner=result.owner
             this.contractparticipant=result.participant
@@ -669,8 +672,7 @@ export default {
                 this.catalogoptions.push({value:item.catalog_id,text:item.name})
             })
             this.catalog_id=result[0].catalog_id
-            this.productsforcatalog('Offer Price',result[0].catalog_id)
-            return requester.ajax_request("/api/v1.0/list_tradepositions","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,trading_id:this.trading_id})
+            return requester.ajax_request("/api/v1.0/list_tradepositions","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,trading_id:this.$route.params.trading_id})
         })
         var catentlist=tradeposcns.then(result => {
             this.tradingpositions=result
@@ -681,6 +683,17 @@ export default {
             return requester.ajax_request("/api/v1.0/read_categories","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id})
         })
         var calcodesdata=catgroupdata.then(result => {
+            this.categories_unprocessed=result
+            var maxcount=0
+            var maxitem
+            result.forEach((item)=>{
+                if(item.count>maxcount){
+                    maxcount=item.count
+                    maxitem=item
+                }
+            })
+            this.category_id=maxitem.catgroup_id
+            this.selectedcatgroup(maxitem.catgroup_id)
             result.forEach((item)=>{
                 this.categories.push({text:item.identifier,value:item.catgroup_id})
             })
@@ -692,8 +705,22 @@ export default {
             })
             return requester.ajax_request("/api/v1.0/read_catentries","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id})
         })
-        allitems.then(result => {
+        var excludeditemsdata=allitems.then(result => {
             this.inclusionitems=result
+            this.productsforcatalog('Offer Price',result[0].catalog_id)
+            return requester.ajax_request("/api/v1.0/excluded_items","POST",this.ac_token,this.rf_token,true,{tcsubtype_id:"CustomizedProductSetExclusion",trading_id:this.$route.params.trading_id})
+        })
+        excludeditemsdata.then(result=>{
+            this.excludeditems=result.items
+            result.items.forEach((eitem)=>{
+                this.inclusionitems.forEach((iitem)=>{
+                    if(eitem==iitem.catentry_id){
+                        this.exclusionitems.push(iitem)
+                    }
+                })
+            })
+            this.totalRows5=this.exclusionitems.length
+            this.exclusionfields=['name','type','category','price','expires','_']
         })
     },
     methods:{
@@ -735,25 +762,10 @@ export default {
         },
         submitproductexclusions(){
             const items=this.exclusionitems
-            const payload={name:"Excluded From Sale",member_id:this.employer,publishtime:null,language_id:this.language_id,
-            description:"A list of items that are not for sale under this contract.",tcsubtype_id:"CustomizedProductSetExclusion",
+            const payload={name:"Excluded Items",member_id:this.employer,publishtime:null,language_id:this.language_id,
+            description:"A list of items that are not for sale.",tcsubtype_id:"CustomizedProductSetExclusion",
             trading_id:this.trading_id,mandatory:1,changeable:1,timecreated:null,type:3,adjustment:0,precedence:0,items:items}
             requester.ajax_request("/api/v1.0/custom_pset_exclusion","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                console.log(result)
-                this.success_message=result.msg
-                this.showSnackbar=true
-            }).fail((jqXHR,textStatus,errorThrown) => {
-                this.success_message=jqXHR.responseJSON.msg
-                this.showSnackbar=true
-                console.log(jqXHR.responseJSON)
-                console.log(textStatus)
-                console.log(errorThrown)
-            })
-        },
-        applyitemdiscount(){},
-        submititemdiscount(){
-            const payload={store_id:this.deployed_store_id,catentry_id:this.invitem_id,trading_id:this.trading_id,calcode_id:this.calcode_id}
-            requester.ajax_request("/api/v1.0/create_catencalcd","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
@@ -775,6 +787,33 @@ export default {
             this.totalRows5=this.exclusionitems.length
             this.exclusionfields=['name','type','category','price','expires','_']
         },
+        submititemdiscount(){
+            const payload={store_id:this.deployed_store_id,catentry_id:this.invitem_id,trading_id:this.trading_id,calcode_id:this.calcode_id}
+            requester.ajax_request("/api/v1.0/create_catencalcd","POST",this.ac_token,this.rf_token,true,payload).done(result => {
+                console.log(result)
+                this.success_message=result.msg
+                this.showSnackbar=true
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },
+        applyitemdiscount(){
+            let copyitems=JSON.parse(JSON.stringify(this.invitems))
+            this.calcodes.forEach((item)=>{
+                if(this.invcalcode_id==item.value){
+                    copyitems.forEach((iitem)=>{
+                        iitem.discount=item.text
+                    })
+                }
+            })
+            this.invitems=copyitems
+            this.totalRows4=copyitems.length
+            this.invfields=['name','type','category','price','offer','discount','expires','_']
+        },
         selectedinvitem(e){
             let val=e.target.value
             let tdpscn_id1
@@ -790,19 +829,29 @@ export default {
             requester.ajax_request("/api/v1.0/trading_read_catentries","POST",this.ac_token,this.rf_token,true,{tdp1:tdpscn_id1,tdp2:tdpscn_id2,member_id:this.employer,language_id:this.language_id}).done(result=>{
                 result.forEach((item)=>{
                     if(item.name==val){
+                        item.discount=null
                         this.invitems.push(item)
                         this.invitem_id=item.catentry_id
                     }
                 })
+                // console.log(this.invitems)
                 this.totalRows4=this.invitems.length
-                this.invfields=['name','type','category','price','offer','custom','discount','expires','_']
+                this.invfields=['name','type','category','price','offer','discount','expires','_']
             })
         },
-        applycategorydiscount(){},
+        applycategorydiscount(){
+            this.calcodes.forEach((item)=>{
+                if(this.calcode_id==item.value){
+                    this.catgroupitems.forEach((citem)=>{
+                        citem.custom=item.text
+                    })
+                }
+            })
+        },
         submitcategorydiscount(){
             const payload={store_id:this.deployed_store_id,catgroup_id:this.category_id,trading_id:this.trading_id,calcode_id:this.calcode_id}
             requester.ajax_request("/api/v1.0/create_catgpcalcd","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                // console.log(result)
+                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
             }).fail((jqXHR,textStatus,errorThrown) => {
@@ -873,7 +922,11 @@ export default {
                     tdpscn_id2=item.tradeposcn_id
                 }
             })
-            requester.ajax_request("/api/v1.0/trading_read_catentries","POST",this.ac_token,this.rf_token,true,{tdp1:tdpscn_id1,tdp2:tdpscn_id2,member_id:this.employer,language_id:this.language_id}).done(result => {
+            const payload={tdp1:tdpscn_id1,tdp2:tdpscn_id2,member_id:this.employer,language_id:this.language_id}
+            this.catgroupitems=[]
+            this.totalRows3=0
+            this.catgroupfields=['name','type','category','price','offer','custom','expires','_']
+            requester.ajax_request("/api/v1.0/trading_read_catentries","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 result.forEach((item)=>{
                     if (item.catgroup_id==e){
                         this.catgroupitems.push(item)
@@ -893,12 +946,11 @@ export default {
                 }
             })
         },
-        editcustomitem(){
-            this.catentries.forEach((item)=>{
-                if(item.name == this.catitem){
-                    this.customprice=item.custom
-                }
-            })
+        editcustomitem(row){
+            let index=row.index
+            var edititem=this.customitems[index]
+            this.customprice=edititem.custom
+            this.catitem=edititem.name
         },
         removecustomitem(row){
             let index=row.index
@@ -916,13 +968,11 @@ export default {
             this.customitems=copyitems
         },
         submitoffers(){
-            // tradeposcn,catgrptpc,storetpc,offer,offerdesc,offerprice,tdpscncntr,termcond
             const payload=this.catentryitems
             let data={trading_id:this.trading_id,items:payload,name:"Offer Price",member_id:this.employer,
             description:"Sales Price for all items within the "+this.catalogname+" catalog",type:'S',
             catalog_id:this.catalog_id,store_id:this.deployed_store_id,published:1,lastupdate:null,
             language_id:this.language_id,changeable:1,tcsubtype_id:'CatalogWithAdjustment'}
-            // console.log(payload)
             requester.ajax_request("/api/v1.0/term_catalog_with_adjustment","POST",this.ac_token,this.rf_token,true,data).done(result => {
                 this.success_message=result.msg
                 this.showSnackbar=true
@@ -951,14 +1001,18 @@ export default {
         productsforcatalog(name,e){
             let tradeposcn_id;
             this.tradingpositions.forEach((item)=>{
-                if(item.name==name){tradeposcn_id=item.tradeposcn_id}
+                if(item.name==name){
+                    tradeposcn_id=item.tradeposcn_id
+                }
             })
             let val=e
-            // console.log(val)
             this.catalogoptions.forEach((item)=>{
                 if(item.value==val){this.catalogname=item.text}
             })
-            requester.ajax_request("/api/v1.0/trading_products_for_catalog","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id,catalog_id:val,tradeposcn_id:tradeposcn_id}).done(result => {
+            let payload={member_id:this.employer,language_id:this.language_id,catalog_id:val,tradeposcn_id:tradeposcn_id}
+            requester.ajax_request("/api/v1.0/trading_products_for_catalog","POST",this.ac_token,this.rf_token,true,
+            payload).done(result => {
+                // console.log(result)
                 this.catentryitems=result
                 this.catentryfields=['name','type','category','price','offer','expires','_']
                 this.totalRows=result.length

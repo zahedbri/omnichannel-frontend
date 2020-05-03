@@ -2726,3 +2726,9 @@ table {
   /* overflow-y: scroll; */
   height:500px;
 }
+
+.category-scroll-area {
+  position:relative;
+  margin:auto;
+  height:350px;
+}

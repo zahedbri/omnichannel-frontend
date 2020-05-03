@@ -22,6 +22,8 @@ import Accounting from './components/accounting/Accounting.vue'
 import Contract from './components/trading/Contract.vue'
 import Account from './components/trading/Account.vue'
 import StoreDetails from './components/stores/StoreDetails.vue'
+import Vendor from './components/vendor/Vendor.vue'
+import PODetails from './components/vendor/PODetails.vue'
 
 Vue.use(Router)
 
@@ -137,6 +139,16 @@ export default new Router({
                     path:'account',
                     name:'account',
                     component:Account
+                },
+                {
+                    path:'vendor',
+                    name:'vendor',
+                    component:Vendor
+                },
+                {
+                    path:'podetails/:ra_id',
+                    name:'podetails',
+                    component:PODetails
                 }
             ]
         }

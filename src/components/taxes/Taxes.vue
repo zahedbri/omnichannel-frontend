@@ -374,13 +374,13 @@
                                                                             <b-col sm="3" md="3">
                                                                                 <div class="form-group mb-4">
                                                                                     <label class="form-label">Calculation</label>
-                                                                                    <b-form-select size="sm" v-model="calscale.calmethod_id" @change.native="formulatescalecode" :options="calmethodoptions" required></b-form-select>
+                                                                                    <b-form-select size="sm" v-model="calscale.calmethod_id" :options="calmethodoptions" required></b-form-select>
                                                                                 </div>
                                                                             </b-col>
                                                                             <b-col sm="3" md="3">
                                                                                 <div class="form-group mb-4">
                                                                                     <label class="form-label">Tax Rule</label>
-                                                                                    <b-form-select size="sm" v-model="calscale.calrule_id" :options="calruleoptions" required></b-form-select>
+                                                                                    <b-form-select size="sm" v-model="calscale.calrule_id" @change.native="formulatescalecode" :options="calruleoptions" required></b-form-select>
                                                                                 </div>
                                                                             </b-col>
                                                                             <b-col sm="12" md="12">
@@ -676,9 +676,8 @@ export default {
         })
         var ffmdata=taxcalrules.then(result => {
             this.calruleitems=result
-            // console.log(result)
             result.forEach((item)=>{
-                this.calruleoptions.push({value:item.calrule_id,text:item.tax_code})
+                this.calruleoptions.push({value:item.calrule_id,text:item.jurisdiction+':'+item.tax_code})
             })
             this.calrulefields=['show_details','tax_code','tax_category','qualification','calculation','shipping','jurisdiction','index']
             return requester.ajax_request("/api/v1.0/read_ffmcenter","POST",this.ac_token,this.rf_token,true,{member_id:this.user_id})
@@ -732,6 +731,7 @@ export default {
         },
         addnewcalscale(){
             const payload={...this.calscale}
+            console.log(payload)
             requester.ajax_request("/api/v1.0/create_taxcalscale","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 console.log(result)
                 this.success_message=result.msg
@@ -766,7 +766,7 @@ export default {
         },
         formulatescalecode(e){
             let val=e.target.value
-            var code='PR'+'/'+'CS'+'/'+this.calscale.calusage_id+'/'+val
+            var code='PR'+'/'+'CS'+'/'+this.calscale.calusage_id+'/'+this.calscale.calmethod_id+'/'+val
             this.calscale.code=code
         },
         formulatecode(e){

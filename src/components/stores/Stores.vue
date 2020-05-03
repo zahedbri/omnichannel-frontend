@@ -41,7 +41,7 @@
                                         </div>
                                     </template>
                                     <template v-slot:cell(phone)="row">
-                                        {{row.item.phone.replace(/ /g,'')}}
+                                        <span v-if="row.item.phone !=null">{{row.item.phone.replace(/ /g,'')}}</span>
                                     </template>
                                 </b-table>
                             </b-card-body>
@@ -87,7 +87,7 @@
                                         </div>
                                     </template>
                                     <template v-slot:cell(phone)="row">
-                                        {{row.item.phone.replace(/ /g,'')}}
+                                        <span v-if="row.item.phone !=null">{{row.item.phone.replace(/ /g,'')}}</span>
                                     </template>
                                 </b-table>
                             </b-card-body>
@@ -118,7 +118,7 @@
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Warehouse Phone</label>
-                                            <b-form-input type="text" size="sm" required v-model="warehouseinfo.phone1" placeholder="Phone number"></b-form-input>
+                                            <b-form-input type="text" :formatter="formatPhone" size="sm" required v-model="warehouseinfo.phone1" placeholder="Phone number"></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
@@ -130,14 +130,14 @@
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">City</label>
-                                            <b-form-input type="text" size="sm" v-model="warehouseinfo.city" placeholder="City"></b-form-input>
+                                            <b-form-input type="text" size="sm" required v-model="warehouseinfo.city" placeholder="City"></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Country</label>
                                             <template>
-                                                <b-form-input placeholder="Fill &amp; Select Country" v-model="warehouseinfo.country" @change.native="changedcountry" size="sm" list="country-list"></b-form-input>
+                                                <b-form-input required placeholder="Fill &amp; Select Country" v-model="warehouseinfo.country" @change.native="changedcountry" size="sm" list="country-list"></b-form-input>
                                                 <datalist id="country-list">
                                                     <option>Select Country</option>
                                                     <option v-for="country in countryselect" :key="country.value">{{country.text}}</option>
@@ -149,7 +149,7 @@
                                         <div class="form-group mb-2">
                                             <label class="form-label">State</label>
                                             <template>
-                                                <b-form-input v-model="warehouseinfo.state" placeholder="Fill &amp; Select State" size="sm" list="state-list"></b-form-input>
+                                                <b-form-input required v-model="warehouseinfo.state" placeholder="Fill &amp; Select State" size="sm" list="state-list"></b-form-input>
                                                 <datalist id="state-list">
                                                     <option>Select State</option>
                                                     <option v-for="state in stateselect" :key="state.value">{{state.text}}</option>
@@ -160,14 +160,14 @@
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Zip Code</label>
-                                            <b-form-input type="text" size="sm" required v-model="warehouseinfo.zipcode" placeholder="Zip Code"></b-form-input>
+                                            <b-form-input type="text" size="sm" v-model="warehouseinfo.zipcode" placeholder="Zip Code"></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Currency</label>
                                             <template>
-                                                <b-form-input @change.native="changedcurrency" v-model="warehouseinfo.setccurr" placeholder="Fill &amp; Select Currency" size="sm" list="currency-list"></b-form-input>
+                                                <b-form-input @change.native="changedcurrency" required v-model="warehouseinfo.setccurr" placeholder="Fill &amp; Select Currency" size="sm" list="currency-list"></b-form-input>
                                                 <datalist id="currency-list">
                                                     <option>Select Currency</option>
                                                     <option v-for="curr in currselect" :key="curr.setccurr">{{curr.description}}</option>
@@ -199,13 +199,13 @@
                                     <b-col sm="6" md="6">
                                         <div class="form-group mb-2">
                                             <label class="form-label">First name</label>
-                                            <b-form-input type="text" size="sm" required v-model="warehouseinfo.firstname" placeholder="Contact's First name"></b-form-input>
+                                            <b-form-input type="text" size="sm" v-model="warehouseinfo.firstname" placeholder="Contact's First name"></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="6" md="6">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Middle name</label>
-                                            <b-form-input type="text" size="sm" required v-model="warehouseinfo.middlename" placeholder="Contact's middle name"></b-form-input>
+                                            <b-form-input type="text" size="sm" v-model="warehouseinfo.middlename" placeholder="Contact's middle name"></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="6" md="6">
@@ -245,14 +245,14 @@
                                                             <b-row>
                                                                 <b-col sm="12" md="12">
                                                                     <div class="form-group mb-2">
-                                                                        <label class="form-label">Organization name</label>
+                                                                        <label class="form-label">Organization Name</label>
                                                                         <b-form-input size="sm" type="text" v-model="customersignup.orgentityname" placeholder="Customer organization's name" required></b-form-input>
                                                                     </div>
                                                                 </b-col>
                                                                 <b-col sm="12" md="12">
                                                                     <div class="form-group mb-2">
-                                                                        <label class="form-label">Email / Phone</label>
-                                                                        <b-form-input size="sm" type="text" v-model="customersignup.logonid" placeholder="Customer organization's email or phone" required></b-form-input>
+                                                                        <label class="form-label">Phone Number</label>
+                                                                        <b-form-input size="sm" :formatter="formatPhone" type="text" v-model="customersignup.logonid" placeholder="Customer organization's phone" required></b-form-input>
                                                                     </div>
                                                                 </b-col>
                                                             </b-row>
@@ -297,20 +297,20 @@
                                                     <b-col sm="4" md="4">
                                                         <div class="form-group mb-2">
                                                             <label class="form-label">Store Phone</label>
-                                                            <b-form-input type="text" size="sm" required v-model="storeinfo.phone1" placeholder="Phone number"></b-form-input>
+                                                            <b-form-input type="text" size="sm" required :formatter="formatPhone" v-model="storeinfo.phone1" placeholder="Phone number"></b-form-input>
                                                         </div>
                                                     </b-col>
                                                     <b-col sm="4" md="4">
                                                         <div class="form-group mb-2">
                                                             <label class="form-label">Email</label>
-                                                            <b-form-input type="text" size="sm" required v-model="storeinfo.email1" placeholder="Email address"></b-form-input>
+                                                            <b-form-input type="text" size="sm" v-model="storeinfo.email1" placeholder="Email address"></b-form-input>
                                                         </div>
                                                     </b-col>
                                                     <b-col sm="4" md="4">
                                                         <div class="form-group mb-2">
                                                             <label class="form-label">Country</label>
                                                             <template>
-                                                                <b-form-input placeholder="Fill &amp; Select Country" v-model="storeinfo.country" @change.native="changedcountry" size="sm" list="country-list"></b-form-input>
+                                                                <b-form-input required placeholder="Fill &amp; Select Country" v-model="storeinfo.country" @change.native="changedcountry" size="sm" list="country-list"></b-form-input>
                                                                 <datalist id="country-list">
                                                                     <option>Select Country</option>
                                                                     <option v-for="country in countryselect" :key="country.value">{{country.text}}</option>
@@ -322,7 +322,7 @@
                                                         <div class="form-group mb-2">
                                                             <label class="form-label">State</label>
                                                             <template>
-                                                                <b-form-input v-model="storeinfo.state" placeholder="Fill &amp; Select State" size="sm" list="state-list"></b-form-input>
+                                                                <b-form-input required v-model="storeinfo.state" placeholder="Fill &amp; Select State" size="sm" list="state-list"></b-form-input>
                                                                 <datalist id="state-list">
                                                                     <option>Select State</option>
                                                                     <option v-for="state in stateselect" :key="state.value">{{state.text}}</option>
@@ -333,20 +333,20 @@
                                                     <b-col sm="3" md="3">
                                                         <div class="form-group mb-2">
                                                             <label class="form-label">City</label>
-                                                            <b-form-input type="text" size="sm" v-model="storeinfo.city" placeholder="City"></b-form-input>
+                                                            <b-form-input type="text" required size="sm" v-model="storeinfo.city" placeholder="City"></b-form-input>
                                                         </div>
                                                     </b-col>
                                                     <b-col sm="3" md="3">
                                                         <div class="form-group mb-2">
                                                             <label class="form-label">Zip Code</label>
-                                                            <b-form-input type="text" size="sm" required v-model="storeinfo.zipcode" placeholder="Zip Code"></b-form-input>
+                                                            <b-form-input type="text" size="sm" v-model="storeinfo.zipcode" placeholder="Zip Code"></b-form-input>
                                                         </div>
                                                     </b-col>
                                                     <b-col sm="3" md="3">
                                                         <div class="form-group mb-2">
                                                             <label class="form-label">Store Currency</label>
                                                             <template>
-                                                                <b-form-input @change.native="changedcurrency" v-model="storeinfo.setccurr" placeholder="Fill &amp; Select Currency" size="sm" list="currency-list"></b-form-input>
+                                                                <b-form-input required @change.native="changedcurrency" v-model="storeinfo.setccurr" placeholder="Fill &amp; Select Currency" size="sm" list="currency-list"></b-form-input>
                                                                 <datalist id="currency-list">
                                                                     <option>Select Currency</option>
                                                                     <option v-for="curr in currselect" :key="curr.setccurr">{{curr.description}}</option>
@@ -369,7 +369,7 @@
                                                     <b-col sm="6" md="6">
                                                         <div class="form-group mb-2">
                                                             <label class="form-label">Middle name</label>
-                                                            <b-form-input type="text" size="sm" required v-model="storeinfo.middlename" placeholder="Contact's middle name"></b-form-input>
+                                                            <b-form-input type="text" size="sm" v-model="storeinfo.middlename" placeholder="Contact's middle name"></b-form-input>
                                                         </div>
                                                     </b-col>
                                                     <b-col sm="6" md="6">
@@ -415,6 +415,7 @@
 <script>
 import requester from "@/services/requester"
 import * as JQuery from "jquery"
+import libphonenumber from "google-libphonenumber"
 export default {
     name:"stores",
     data(){
@@ -470,6 +471,7 @@ export default {
                 ownername:requester.getfromlocalstorage("employername"),nickname:null,address1:null,
                 state:null,country:null,city:null,email1:null,phone1:null,zipcode:null,firstname:null,
                 middlename:null,lastname:null,persontitle:null,photourl:null,
+                superowner:requester.getfromlocalstorage("employer")
             },
             warehouseinfo:{
                 member_id:requester.getfromlocalstorage("user_id"),type:'S',setccurr:null,identifier:null,
@@ -504,19 +506,29 @@ export default {
             return requester.ajax_request("/api/v1.0/read_stores","POST",this.ac_token,this.rf_token,true,{owner_id:this.employer})
         })
         var yourstores=allstores.then(result => {
+            // console.log(result)
             this.allstoresitems=result
             this.totalRows=result.length
             this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency']
             return requester.ajax_request("/api/v1.0/your_stores","POST",this.ac_token,this.rf_token,true,{owner_id:this.employer})
         })
         yourstores.then(result => {
-            console.log(result)
+            // console.log(result)
             this.yourstoresitems=result
             this.totalRows2=result.length
             this.yourstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
         })
     },
     methods:{
+        formatPhone(value){
+            const PNF=libphonenumber.PhoneNumberFormat
+            const phoneUtil=libphonenumber.PhoneNumberUtil.getInstance()
+            const number=phoneUtil.parseAndKeepRawInput(value,'NG')
+            let phoneclearance=phoneUtil.isValidNumber(number)
+            if(phoneclearance){this.unclearedphone=false}
+            else if(phoneclearance==false){this.unclearedphone=true}
+            return phoneUtil.format(number,PNF.INTERNATIONAL)
+        },
         storedetails(row){
             let idx=row.index
             let store_id=this.yourstoresitems[idx].storeent_id
@@ -535,13 +547,6 @@ export default {
                     this.storeorgs.push({value:item.users_id,text:item.orgentityname})
                 })
                 console.log(result)
-                // this.userstableitems=[]
-                // console.log(result)
-                // result.usersdata.forEach((item)=>{
-                //     this.userstableitems.push({employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
-                // })
-                // this.totalRows=this.userstableitems.length
-                // this.$refs['new-customer-modal'].hide()
             }).fail((jqXHR,textStatus,errorThrown) => {
                 console.log(jqXHR.responseJSON)
                 console.log(textStatus)
@@ -563,6 +568,9 @@ export default {
                 this.success_message=result.msg
                 this.showSnackbar=true
                 console.log(result)
+                this.yourstoresitems=result.your_stores
+                this.totalRows2=result.length
+                this.yourstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
                 this.$refs['new-warehouse-modal'].hide()
             }).fail((jqXHR,textStatus,errorThrown) => {
                 console.log(jqXHR.responseJSON)
@@ -635,6 +643,9 @@ export default {
                 this.success_message=result.msg
                 this.showSnackbar=true
                 console.log(result)
+                this.allstoresitems=result.allstores
+                this.totalRows=result.allstores.length
+                this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency']
                 // this.$refs['new-store-modal'].hide()
             }).fail((jqXHR,textStatus,errorThrown) => {
                 console.log(jqXHR.responseJSON)

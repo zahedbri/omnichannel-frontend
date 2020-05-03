@@ -18,14 +18,14 @@
                 <div class="main-menu">
                     <h5 class="sidenav-heading">Main</h5>
                     <ul id="side-main-menu" class="side-menu list-unstyled">
-                        <li><router-link to="dashboard"><i class="fas fa-th-large mr-1"></i>Dashboard</router-link></li>
-                        <li><router-link to="usermanagement"><i class="fas fa-user mr-1"></i>Members</router-link></li>
-                        <li><router-link to="stores"><i class="fas fa-store mr-1"></i>Stores</router-link></li>
-                        <li><router-link to="trading"><i class="fas fa-handshake mr-1"></i>Trading</router-link></li>
-                        <li><router-link to="catalogindex"><i class="fas fa-boxes mr-1"></i>Inventory</router-link></li>
-                        <li><a href="#"><i class="fas fa-comments-dollar mr-1"></i>Marketing</a></li>
-                        <li><a href="#"><i class="fab fa-cc-amazon-pay mr-1"></i>Payment</a></li>
-                        <li><router-link to="chartofaccounts"><i class="fas fa-book mr-1"></i>Reports</router-link></li>
+                        <li class="c-pointer"><a><i class="fas fa-th-large mr-1"></i>Dashboard</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/usermanagement')"><i class="fas fa-users-cog mr-1"></i>Members</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/stores')"><i class="fas fa-store mr-1"></i>Stores</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/trading')"><i class="fas fa-handshake mr-1"></i>Trading</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/catalogindex')"><i class="fas fa-boxes mr-1"></i>Inventory</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/vendor')"> <i class="fas fa-dolly mr-1"></i>Vendors</a></li>
+                        <li class="c-pointer"><a> <i class="fab fa-cc-amazon-pay mr-1"></i>Payment</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/chartofaccounts')"><i class="fas fa-book mr-1"></i>Reports</a></li>
                     </ul>
                 </div>
             </div>
@@ -91,6 +91,9 @@ export default {
         }
     },
     methods:{
+        gotopath(pth){
+            this.$router.push( {path:pth} )
+        },
         activatesidebar(){this.shrinkClass=!this.shrinkClass}
     }
 }
