@@ -43,13 +43,13 @@
                                     <template v-slot:head(_)>
                                         <div class="d-flex align-items-center justify-content-center">
                                             <b-button disabled class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="far fa-trash-alt"></i></b-button>
-                                            <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-download"></i></b-button>
+                                            <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="far fa-clipboard"></i></b-button>
                                         </div>
                                     </template>
                                     <template v-slot:cell(_)="row">
                                         <div class="d-flex align-items-center justify-content-center">
                                             <b-button @click="removerow(row)" class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="far fa-trash-alt"></i></b-button>
-                                            <b-button v-b-modal.receipt-modal @click="receiveitem(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-download"></i></b-button>
+                                            <b-button v-b-modal.receipt-modal @click="receiveitem(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="far fa-clipboard"></i></b-button>
                                         </div>
                                     </template>
                                 </b-table>
@@ -99,13 +99,13 @@
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Receipt Date</label>
-                                            <b-form-datepicker required size="sm" type="text" v-model="receipt.receiptdate" placeholder="Expected Date"></b-form-datepicker>
+                                            <b-form-datepicker required size="sm" type="text" v-model="receipt.receiptdate" placeholder="Receipt Date"></b-form-datepicker>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Quantity Received</label>
-                                            <b-form-input size="sm" v-model="receipt.qtyreceived" type="number" step="1" placeholder="Quantity Received" required></b-form-input>
+                                            <b-form-input size="sm" v-model="receipt.qtyreceived" :max="receipt.qtyremaining" type="number" step="1" placeholder="Quantity Received" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
@@ -135,7 +135,7 @@
                                     <b-col sm="12" md="12">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Comment</label>
-                                            <b-form-textarea :rows="1" :max-rows="6" v-model="receipt.comment1" placeholder="Comment"></b-form-textarea>
+                                            <b-form-textarea :rows="1" :max-rows="6" v-model="receipt.comment1" placeholder="Comment the quantities received on the receipt date."></b-form-textarea>
                                         </div>
                                     </b-col>
 
@@ -195,20 +195,20 @@
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Quantity Allocated</label>
-                                            <b-form-input size="sm" v-model="radetail.qtyallocated" type="number" step="1" placeholder="Quantity Allocated" required></b-form-input>
+                                            <b-form-input size="sm" readonly v-model="radetail.qtyallocated" type="number" step="1" placeholder="Quantity Allocated" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Per Unit Cost</label>
-                                            <b-form-input size="sm" :disabled="radetail.qtyreceived<=0" v-model="radetail.cost" type="number" step="1" placeholder="Per Unit Cost" required></b-form-input>
+                                            <b-form-input size="sm" v-model="radetail.cost" type="number" step="1" placeholder="Per Unit Cost" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-4">
                                             <label class="form-label">Currency</label>
                                             <template>
-                                                <b-form-input :disabled="radetail.qtyreceived<=0" required placeholder="Fill &amp; Select Currency" v-model="radetail.currency" @change.native="changedreceiptcurrency" size="sm" list="currency-list"></b-form-input>
+                                                <b-form-input required placeholder="Fill &amp; Select Currency" v-model="radetail.currency" @change.native="changedreceiptcurrency" size="sm" list="currency-list"></b-form-input>
                                                 <datalist id="currency-list">
                                                     <option>Select Currency</option>
                                                     <option v-for="currency in curselects" :key="currency.setccurr">{{currency.description}}</option>
@@ -225,7 +225,7 @@
                                     <b-col sm="12" md="12">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Footnote</label>
-                                            <b-form-textarea :rows="1" :max-rows="6" v-model="radetail.radetailcomment" placeholder="Comment"></b-form-textarea>
+                                            <b-form-textarea :rows="1" :max-rows="6" v-model="radetail.radetailcomment" placeholder="Comment the expected quantities to be received on expected date."></b-form-textarea>
                                         </div>
                                     </b-col>
                                 </b-row>
@@ -274,7 +274,7 @@ export default {
             emptydetails:[],ffmoptions:[{value:null,text:"Select Warehouse"}],catentries:null,
             radetail:{
                 ra_id:this.$route.params.ra_id,ffmcenter_id:null,itemspc_id:null,qtyordered:null,
-                qtyreceived:null,qtyremaining:null,qtyallocated:0,expecteddate:null,radetailcomment:null,
+                qtyreceived:null,qtyremaining:0,qtyallocated:0,expecteddate:null,radetailcomment:null,
                 lastupdate:null,catentry_id:null,catentryname:null,store_id:null,vendor_id:null,
                 cost:null,setccurr:null,currency:null,
             },
@@ -282,6 +282,7 @@ export default {
                 versionspc_id:null,radetail_id:null,store_id:null,setccurr:null,ffmcenter_id:null,catentry:null,
                 vendor_id:null,receiptdate:null,qtyreceived:null,qtyinprocess:null,qtyonhand:null,qtyinkits:null,
                 cost:null,comment1:null,lastupdate:null,createtime:null,receipttype:null,rtnrcptdsp_id:null,
+                qtyremaining:null,ra_id:this.$route.params.ra_id
             }
         }
     },
@@ -344,6 +345,12 @@ export default {
                 console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
+
+                this.detailsitems=result.detailsitems
+                this.totalRows=result.detailsitems.length
+                this.detailsfields=['warehouse','item','ordered','received','remaining','allocated','expected_on','updated_on','_']
+                this.$refs['receipt-modal'].hide()
+
             }).fail((jqXHR,textStatus,errorThrown) => {
                 this.success_message=jqXHR.responseJSON.msg
                 this.showSnackbar=true
@@ -393,13 +400,15 @@ export default {
                 }
                 this.receipt.ffmcenter_id=result.ffmcenter_id
                 this.receipt.vendor_id=result.vendor_id
-                this.receipt.receiptdate=result.receiptdate.split(' ')[0]
+                // TODO nullify receiptdate so this sets a new record
+                // this.receipt.receiptdate=result.receiptdate.split(' ')[0]
+                this.receipt.qtyremaining=result.qtyremaining
                 this.receipt.qtyreceived=result.qtyreceived
                 this.receipt.qtyinprocess=result.qtyinprocess
                 this.receipt.qtyonhand=result.qtyonhand
                 this.receipt.qtyinkits=result.qtyinkits
                 this.receipt.cost=result.unit_cost
-                this.receipt.comment1=result.comment
+                // this.receipt.comment1=result.comment
                 this.receipt.lastupdate=result.lastupdate
                 this.receipt.createtime=result.createtime
                 this.receipt.receipttype=result.receipttype
@@ -428,9 +437,9 @@ export default {
         },
         submitradetail(){
             const payload={...this.radetail}
-            console.log(payload)
+            // console.log(payload)
             requester.ajax_request("/api/v1.0/create_radetail","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
-                console.log(result)
+                // console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.detailsitems=result.detailsitems

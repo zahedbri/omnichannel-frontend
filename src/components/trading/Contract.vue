@@ -487,10 +487,46 @@
                                             <i class="fas fa-shipping-fast mr-1"></i>Shipping
                                         </template>
                                     </b-tab>
-                                    <b-tab>
+                                    <b-tab active>
                                         <template v-slot:title>
                                             <i class="fas fa-money-check-alt mr-1"></i>Payment
                                         </template>
+                                        <b-card no-body class="shadow-none">
+                                            <b-card-header class="py-1 px-0 d-flex justify-content-between align-items-center" style="background:#fff !important;">
+                                                <b-container fluid class="px-0">
+                                                    <b-row>
+                                                        <b-col sm="5"><span class="text-dark text-xsmall">The payment methods available under this contract.</span></b-col>
+                                                        <b-col sm="7">
+                                                            <b-row class="d-flex justify-content-end align-items-center">
+                                                                <b-col sm="4" class="pl-0 pr-1 d-flex justify-content-start align-items-center">
+                                                                    <template>
+                                                                        <b-form-select @change="changeselectedpaymethod" size="sm" v-model="paymethod_id" :options="paymethodoptions" required></b-form-select>
+                                                                    </template>
+                                                                    <b-button @click="submitpaymethodpreferences" :disabled="paymethod_id==null" variant="primary" v-b-tooltip.hover title="Save" size="sm" type="button"><i class="fas fa-save"></i></b-button>
+                                                                </b-col>
+                                                                <b-col sm="3" class="d-flex justify-content-end pl-0">
+                                                                    <b-pagination v-model="currentPage7" :total-rows="totalRows7" :per-page="perPage7" size="sm" class="my-0"></b-pagination>
+                                                                </b-col>
+                                                            </b-row>
+                                                        </b-col>
+                                                    </b-row>
+                                                </b-container>
+                                            </b-card-header>
+                                            <b-card-body>
+                                                <b-table bordered show-empty striped hover :current-page="currentPage7" :per-page="perPage7" :items="paypolicytcitems" :fields="paypolicytcfields">
+                                                    <template v-slot:head(_)>
+                                                        <div class="d-flex align-items-center justify-content-center">
+                                                            <b-button disabled class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="far fa-trash-alt"></i></b-button>
+                                                        </div>
+                                                    </template>
+                                                    <template v-slot:cell(_)>
+                                                        <div class="d-flex align-items-center justify-content-center">
+                                                            <b-button class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="far fa-trash-alt"></i></b-button>
+                                                        </div>
+                                                    </template>
+                                                </b-table>
+                                            </b-card-body>
+                                        </b-card>
                                     </b-tab>
                                 </b-tabs>
                             </b-card>
@@ -584,6 +620,7 @@ export default {
             currentPage4:1,totalRows4:null,perPage4:6,filter4:null,
             currentPage5:1,totalRows5:null,perPage5:6,filter5:null,
             currentPage6:1,totalRows6:null,perPage6:6,filter6:null,
+            currentPage7:1,totalRows7:null,perPage7:6,filter7:null,
 
             trading_id:this.$route.params.trading_id,
 
@@ -633,7 +670,9 @@ export default {
             calcodes:[{value:null,text:"Select Discount"}],calcode_id:null,catgroupitems:[],catgroupfields:[],
             invitem:null,invitems:[],invfields:[],invcalcode_id:null,invitem_id:null,exclusionitem:null,inclusionitems:[],
             exclusionitems:[],exclusionfields:[],excategory_id:null,excatgroupitems:[],excatgroupfields:[],
-            categories_unprocessed:[],excludeditems:null,
+            categories_unprocessed:[],excludeditems:null,paymethoditems:[],paymethodfields:[],
+            paymethodoptions:[{value:null,text:"Select Payment Method"}],paymethod_id:null,
+            paypolicytcitems:[],paypolicytcfields:['name','type','store','description','created','updated','_']
         }
     },
     created(){
@@ -710,7 +749,7 @@ export default {
             this.productsforcatalog('Offer Price',result[0].catalog_id)
             return requester.ajax_request("/api/v1.0/excluded_items","POST",this.ac_token,this.rf_token,true,{tcsubtype_id:"CustomizedProductSetExclusion",trading_id:this.$route.params.trading_id})
         })
-        excludeditemsdata.then(result=>{
+        var paymethodsdata=excludeditemsdata.then(result=>{
             this.excludeditems=result.items
             result.items.forEach((eitem)=>{
                 this.inclusionitems.forEach((iitem)=>{
@@ -721,9 +760,52 @@ export default {
             })
             this.totalRows5=this.exclusionitems.length
             this.exclusionfields=['name','type','category','price','expires','_']
+            return requester.ajax_request("/api/v1.0/list_payment_policies","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id,policytype_id:"Payment"})
+        })
+        var paymentpolicydata=paymethodsdata.then(result=>{
+            console.log(result)
+            result.forEach((item)=>{
+                if(item.storeent_id==this.deployed_store_id){
+                    this.paymethodoptions.push({text:item.name,value:item.policy_id})
+                    this.paymethoditems.push(item)
+                }
+            })
+            return requester.ajax_request("/api/v1.0/read_payment_policy","POST",this.ac_token,this.rf_token,true,{tcsubtype_id:"Payment",trading_id:this.trading_id,language_id:this.language_id})
+        })
+        paymentpolicydata.then(result=>{
+            this.totalRows7=result.length
+            result.forEach((item)=>{
+                this.paypolicytcitems.push(item)
+            })
         })
     },
     methods:{
+        changeselectedpaymethod(e){
+            let copyitems=JSON.parse(JSON.stringify(this.paypolicytcitems))
+            this.paymethoditems.forEach((item)=>{
+                if (item.policy_id==e){
+                    copyitems.push(item)
+                }
+            })
+            this.totalRows7=copyitems.length
+            this.paypolicytcitems=copyitems
+
+        },
+        submitpaymethodpreferences(){
+            const items=this.paypolicytcitems
+            const payload={tcsubtype_id:"Payment",trading_id:this.trading_id,mandatory:1,changeable:1,language_id:this.language_id,
+            description:"Payment Methods available under the contract.",items:items,member_id:this.employer}
+            requester.ajax_request("/api/v1.0/create_payment_tc","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                this.success_message=result.msg
+                this.showSnackbar=true
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },
         submitcategoryexclusion(){
             const items=this.excatgroupitems
             let catalog_id=this.excatgroupitems[0].catalog_id

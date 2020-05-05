@@ -17,8 +17,7 @@
             </b-container>
         </div>
         <section class="forms">
-            <b-container fluid>
-                <header></header>
+            <b-container fluid class="mt-2">
                 <b-row>
                     <b-col cols="3" class="pr-2">
                         <b-card no-body class="mb-0 updates daily-feeds">
@@ -135,23 +134,43 @@
                                             </div>
                                         </b-col>
                                         <b-col sm="4" md="4" class="my-0 d-flex justify-content-end">
-                                            <!-- <b-button class="mr-2 btn-dull-border" size="sm" variant="outline-primary"><i class="fas fa-th"></i></b-button>
-                                            <b-button class="mr-2 btn-dull-border" size="sm" variant="outline-primary"><i class="fas fa-list"></i></b-button> -->
-                                            <b-pagination v-model="currentPage2" @input="selectpage" :total-rows="totalRows2" :per-page="perPage2" size="sm" class="my-0"></b-pagination>
+                                            <b-button @click="changeview('g')" class="mr-2 btn-dull-border" :class="{active:isgrid}" size="sm" variant="outline-primary"><i class="fas fa-th"></i></b-button>
+                                            <b-button @click="changeview('l')" class="mr-2 btn-dull-border" :class="{active:islist}" size="sm" variant="outline-primary"><i class="fas fa-list"></i></b-button>
+                                            <b-pagination v-if="isgrid==true" v-model="currentPage2" @input="selectpage" :total-rows="totalRows2" :per-page="perPage2" size="sm" class="my-0"></b-pagination>
+                                            <b-pagination v-else-if="islist==true" v-model="currentPage3" @input="selectpage" :total-rows="totalRows3" :per-page="perPage3" size="sm" class="my-0"></b-pagination>
                                         </b-col>
                                     </b-card-header>
                                 </b-card>
                             </b-col>
                         </b-row>
-                        <b-row>
-                            <b-col v-for="item in catentryitems" :key="item.catentry_id" md="6" xl="4" class="cat-item pl-1 pr-1">
+                        <b-row class="d-flex">
+                            <b-col v-if="islist" cols="12" class="pl-1 pr-1">
+                                <b-card no-body>
+                                    <b-card-body>
+                                        <b-table bordered show-empty striped hover :current-page="currentPage3" :per-page="perPage3" :items="inventoryitems" :fields="inventoryfields">
+                                            <template v-slot:cell(item)="row">
+                                                <div class="content d-flex align-items-center justify-content-left">
+                                                    <a href="#" style="margin-right:10px!important; width:45px!important; height:45px !important;">
+                                                        <img class="img-fluid rounded inv-list-img" :src="row.item.image">
+                                                    </a>
+                                                    <div class="">
+                                                        <span class="d-inline-block" style="font-size:1.0em;"> {{row.item.name}}</span>
+                                                        <span class="d-block" style="color:#555; font-size:0.8em;"><strong>Type:</strong> {{row.item.type}} </span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </b-table>
+                                    </b-card-body>
+                                </b-card>
+                            </b-col>
+                            <b-col v-else-if="isgrid" v-for="item in catentryitems" :key="item.catentry_id" md="6" xl="4" class="cat-item pl-1 pr-1">
                                 <b-card no-body class="mb-2">
                                     <b-card-body>
                                         <div class="media align-items-center">
                                             <span v-if="item.fullimage==null" class="avatar avatar-xl mr-3" :style="{backgroundImage:`url(${defaultproductphoto})`}"></span>
                                             <span v-else-if="item.fullimage!=null" class="avatar avatar-xl mr-3" :style="{backgroundImage:`url(${item.fullimage})`}"></span>
                                             <div class="media-body overflow-hidden">
-                                                <h5 class="card-text mb-0">{{item.name}}</h5>
+                                                <h5 class="card-text mb-0 text-xsmall">{{item.name}}</h5>
                                                 <p class="card-text mb-1 text-uppercase" style="font-size:0.6rem !important;">{{item.catenttype_id}}</p>
                                                 <strike><p class="card-text mb-0"> {{item.category}} </p></strike>
                                                 <p class="card-text">Price {{item.symbol}}{{item.price}}</p>
@@ -622,12 +641,9 @@ export default {
     data(){
         return {
             searchTerm:'',
-            currentPage:1,
-            totalRows:null,
-            perPage:10,
-            perPage2:12,
-            currentPage2:1,
-            totalRows2:null,
+            currentPage:1,totalRows:null,perPage:10,
+            perPage2:12,currentPage2:1,totalRows2:null,
+            perPage3:6,currentPage3:1,totalRows3:null,
             filter:null,
             defaultoption:true,
             attrvaluevisible:false,
@@ -705,9 +721,8 @@ export default {
             attrvalueitems:[{attr_id:null,attribute:null,type:null,attrtype_id:null,value:null}],
             attrform:{attr_id:null,attrtype_id:null,value:null,catentry_id:null,usage:2,
             language_id:requester.getfromlocalstorage("language_id")},
-            catentryitems:[],
-            catentrysplits:[],
-            combinedcatentries:[],
+            catentryitems:[],catentrysplits:[],combinedcatentries:[],
+            inventoryitems:[],inventoryfields:[],islist:false,isgrid:true,
         }
     },
     computed:{
@@ -730,7 +745,6 @@ export default {
             return requester.ajax_request("/api/v1.0/list_catentries","POST",this.ac_token,this.rf_token,true,{member_id:this.employer_id,language_id:this.language_id})
         })
         var accountlist=catentrylist.then(result => {
-            // console.log(result)
             this.catentries=result
             return requester.ajax_request("/api/v1.0/list_accounts","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id})
         })
@@ -746,7 +760,6 @@ export default {
             return requester.ajax_request("/api/v1.0/read_attr","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
         })
         var containerdata=attrdata.then(result => {
-            // console.log(result)
             result.forEach((item)=>{
                 this.attributeoptions.push({value:item.attr_id,text:item.identifier})
             })
@@ -759,13 +772,25 @@ export default {
             this.composites=result
             return requester.ajax_request("/api/v1.0/read_catentries","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id,member_id:this.employer})
         })
-        catentrydata.then(result => {
+        var inventorydata=catentrydata.then(result => {
             this.combinedcatentries=result
             this.totalRows2=result.length
             this.catentryitems=requester.splitarr(result,this.perPage2)[0]
+            return requester.ajax_request("/api/v1.0/list_inventory","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
+        })
+        inventorydata.then(result=>{
+            // console.log(result)
+            this.inventoryitems=result
+            this.inventoryfields=['item','expires','quantity','store','warehouse']
+            this.totalRows3=result.length
         })
     },
     methods:{
+        changeview(v){
+            if(v=="g"){this.isgrid=true;this.islist=false;}
+            else if(v=="l"){this.isgrid=true;this.islist=false;}
+            else {this.isgrid=true;this.islist=false;}
+        },
         executesearch(e){
             if(e.length > 0){
                 var filteritems=this.catentryitems.filter((item)=>{
@@ -792,9 +817,7 @@ export default {
         },
         addattribute(){
             const payload={...this.attrform}
-            // console.log(payload)
             requester.ajax_request("/api/v1.0/create_catentryattr","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                // console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.$refs['new-item-modal'].hide()
@@ -814,7 +837,6 @@ export default {
         setcomposite(){this.defaultoption=false},
         submitattribute(){
             const payload={...this.attribute}
-            // console.log(payload)
             requester.ajax_request("/api/v1.0/create_attribute","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 this.success_message=result.msg
                 this.showSnackbar=true
@@ -830,7 +852,6 @@ export default {
         },
         submitall(){
             requester.ajax_request("/api/v1.0/create_composite","POST",this.ac_token,this.rf_token,true,{components:this.relitems}).done(result=>{
-                // console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.$refs['new-item-modal'].hide()
@@ -855,12 +876,10 @@ export default {
         },
         submitparentcomposite(){
             const payload={...this.catentrycomposite}
-            console.log(payload)
             requester.ajax_request("/api/v1.0/create_parent_composite","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.compositetabindex+=1
-                console.log(result)
                 this.composites=result.entries
                 this.catentryitems=result.catentryitems
             }).fail((jqXHR,textStatus,errorThrown) => {
@@ -928,7 +947,6 @@ export default {
             const payload={...this.catentry}
             console.log(payload)
             requester.ajax_request("/api/v1.0/create_catentry","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.attrvaluefields=['show_details','attribute','type','value','action']
@@ -958,9 +976,7 @@ export default {
         },
         submitnewcatalog(){
             const payload={...this.catalog}
-            console.log(payload)
             requester.ajax_request("/api/v1.0/create_catalog","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.cataloglists=result.returns

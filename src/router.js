@@ -24,6 +24,7 @@ import Account from './components/trading/Account.vue'
 import StoreDetails from './components/stores/StoreDetails.vue'
 import Vendor from './components/vendor/Vendor.vue'
 import PODetails from './components/vendor/PODetails.vue'
+import Payment from './components/payment/Payment.vue'
 
 Vue.use(Router)
 
@@ -149,6 +150,11 @@ export default new Router({
                     path:'podetails/:ra_id',
                     name:'podetails',
                     component:PODetails
+                },
+                {
+                    path:'payment',
+                    name:'payment',
+                    component:Payment
                 }
             ]
         }

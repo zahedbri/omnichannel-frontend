@@ -2732,3 +2732,8 @@ table {
   margin:auto;
   height:350px;
 }
+
+.inv-list-img {
+	width: auto !important;
+	height: 50px !important;
+}

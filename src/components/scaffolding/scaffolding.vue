@@ -22,9 +22,9 @@
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/usermanagement')"><i class="fas fa-users-cog mr-1"></i>Members</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/stores')"><i class="fas fa-store mr-1"></i>Stores</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/trading')"><i class="fas fa-handshake mr-1"></i>Trading</a></li>
-                        <li class="c-pointer"><a @click="gotopath('/scaffolding/catalogindex')"><i class="fas fa-boxes mr-1"></i>Inventory</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/catalogindex')"><i class="fas fa-boxes mr-1"></i>Catalog</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/vendor')"> <i class="fas fa-dolly mr-1"></i>Vendors</a></li>
-                        <li class="c-pointer"><a> <i class="fab fa-cc-amazon-pay mr-1"></i>Payment</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/payment')"> <i class="fab fa-cc-amazon-pay mr-1"></i>Payment</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/chartofaccounts')"><i class="fas fa-book mr-1"></i>Reports</a></li>
                     </ul>
                 </div>

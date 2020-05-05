@@ -24,7 +24,7 @@
                                 </template>
                                 <b-row>
                                     <b-col cols="12">
-                                        <b-card no-body class="mb-0">
+                                        <b-card no-body class="mb-0 shadow-none p-0">
                                             <b-card-header style="background:#fff;" class="d-flex align-items-center justify-content-between py-2">
                                                 <b-col sm="6" md="6" class="mt-1 mb-0 pl-0">
                                                     <div class="input-group">
@@ -43,14 +43,17 @@
                                 </b-row>
                                 <b-row>
                                     <b-col cols="12">
-                                        <b-card no-body>
-                                            <b-card-body>
+                                        <b-card no-body class="shadow-none">
+                                            <b-card-body class="p-0">
                                                 <b-table bordered show-empty striped hover :current-page="currentPage" :per-page="perPage" :items="raitems" :fields="rafields" :filter="filter" @filtered="onFiltered">
                                                     <template v-slot:head(_)>
                                                         <div class="d-flex align-items-center justify-content-center">
                                                             <b-button disabled class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="fas fa-eye"></i></b-button>
                                                             <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
                                                         </div>
+                                                    </template>
+                                                    <template v-slot:cell(closed)="row">
+                                                        <span v-if="row.item.open=='Yes'">No</span>
                                                     </template>
                                                     <template v-slot:cell(_)=row>
                                                         <div class="d-flex align-items-center justify-content-center">
@@ -95,12 +98,6 @@
                                                     <template v-slot:cell(unit_cost)="row">
                                                         {{row.item.setccurr}}{{row.item.unit_cost}}
                                                     </template>
-                                                    <!-- <template v-slot:cell(_)=row>
-                                                        <div class="d-flex align-items-center justify-content-center">
-                                                            <b-button @click="podetails(row)" class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="fas fa-eye"></i></b-button>
-                                                            <b-button class="dull-border2 mr-0" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
-                                                        </div>
-                                                    </template> -->
                                                 </b-table>
                                             </b-card-body>
                                         </b-card>
@@ -211,13 +208,14 @@ export default {
             return requester.ajax_request("/api/v1.0/read_ra","GET",this.ac_token,this.rf_token,false,null)
         })
         var receiptsdata=radata.then(result=>{
+            console.log(result)
             this.raitems=result
             this.rafields=['po_number','vendor','store','created','ordered','open','closed','_']
             this.totalRows=result.length
             return requester.ajax_request("/api/v1.0/read_receipts","GET",this.ac_token,this.rf_token,false,null)
         })
         receiptsdata.then(result=>{
-            console.log(result)
+            // console.log(result)
             this.receiptitems=result
             this.totalRows2=result.length
             this.receiptfields=['PO_number','unit_cost','created','on_hand','quantity','received','type','store','updated','vendor','warehouse']
@@ -234,7 +232,7 @@ export default {
             this.currentPage=1
         },
         formulatepo(e){
-            this.ra.externalid="PO"+'/'+this.ra.vendor_id+'/'+this.ra.store_id+'/'+this.lastraid
+            this.ra.externalid="PO"+'/'+this.ra.vendor_id+'/'+this.ra.store_id
         },
         submitra(){
             const payload={...this.ra}
@@ -245,6 +243,12 @@ export default {
                 this.rafields=['po_number','vendor','store','created','ordered','open','closed','_']
                 this.totalRows=result.radata.length
                 this.$refs['new-po-modal'].hide()
+
+                this.ra.vendor_id=null;this.ra.store_id=null;this.ra.orderdate=null
+                this.ra.openindicator='Y';this.ra.dateclosed=null
+                this.ra.lastupdate=null;this.ra.createtime=null
+                this.ra.externalid=null
+
             }).fail((jqXHR,textStatus,errorThrown) => {
                 this.success_message=jqXHR.responseJSON.msg
                 this.showSnackbar=true
