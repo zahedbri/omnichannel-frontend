@@ -114,8 +114,8 @@
                                     </b-col>
                                     <b-col md="12">
                                         <div class="form-group mb-4">
-                                            <label class="form-label">Description</label>
-                                            <b-form-textarea :rows="1" :max-rows="6" v-model="shipmode.description" placeholder="Brief description"></b-form-textarea>
+                                            <label class="form-label">Name of Shipping Mode</label>
+                                            <b-form-input type="text" v-model="shipmode.description" placeholder="Name"></b-form-input>
                                         </div>
                                     </b-col>
                                 </b-row>
@@ -247,7 +247,15 @@ export default {
         }
     },
     created(){
-        var utildata=requester.ajax_request("/api/v1.0/store_utilities","POST",this.ac_token,this.rf_token,true,{store_id:this.store_id,language_id:this.language_id,member_id:this.employer})
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var utildata=verification.then(result=>{
+            return requester.ajax_request("/api/v1.0/store_utilities","POST",this.ac_token,this.rf_token,true,{store_id:this.store_id,language_id:this.language_id,member_id:this.employer})
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var calcodemethods=utildata.then(result => {
             this.utilitems=result
             // console.log(result)
@@ -299,10 +307,11 @@ export default {
             })
             return requester.ajax_request("/api/v1.0/read_calcode","POST",this.ac_token,this.rf_token,true,{storeent_id:this.store_id,language_id:this.language_id,usages:[2]})
         })
-        calcodedata.then(result => {
+        var shippingdata=calcodedata.then(result => {
             result.forEach((item)=>{
                 this.calcodeoptions.push({value:item.calcode_id,text:item.description})
             })
+            return requester.ajax_request("/api/v1.0/read_shipping_policy","POST",this.ac_token,this.rf_token,true,{})
         })
     },
     methods:{

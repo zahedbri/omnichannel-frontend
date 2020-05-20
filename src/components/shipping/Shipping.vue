@@ -529,7 +529,15 @@ export default {
         }
     },
     created(){
-        var storesdata=requester.ajax_request("/api/v1.0/list_stores","POST",this.ac_token,this.rf_token,true,{member_id:this.user_id,language_id:this.language_id})
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var storesdata=verification.then(result=>{
+            return requester.ajax_request("/api/v1.0/list_stores","POST",this.ac_token,this.rf_token,true,{member_id:this.user_id,language_id:this.language_id})
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var jurstdata=storesdata.then(result => {
             result.forEach((item)=>{
                 this.storeslist.push({value:item.storeent_id,text:item.identifier})

@@ -25,6 +25,11 @@ import StoreDetails from './components/stores/StoreDetails.vue'
 import Vendor from './components/vendor/Vendor.vue'
 import PODetails from './components/vendor/PODetails.vue'
 import Payment from './components/payment/Payment.vue'
+import Logistics from './components/logistics/Logistics.vue'
+import MobileOps from './components/stores/MobileOps.vue'
+import Token from './components/login/Token.vue'
+import EditUserProfile from './components/userprofile/EditUserProfile.vue'
+import AccountDetails from './components/accounting/AccountDetails.vue'
 
 Vue.use(Router)
 
@@ -39,6 +44,11 @@ export default new Router({
             path:"/login",
             name:"login",
             component:Login
+        },
+        {
+            path:"/token",
+            name:"token",
+            component:Token
         },
         {
             path:"/signup",
@@ -80,6 +90,11 @@ export default new Router({
                     path:'userprofile/:id',
                     name:"userprofile",
                     component:UserProfile,
+                },
+                {
+                    path:"edituserprofile/:id",
+                    name:"edituserprofile",
+                    component:EditUserProfile
                 },
                 {
                     path:'editcompanyprofile/:id',
@@ -132,12 +147,17 @@ export default new Router({
                     component:Accounting
                 },
                 {
+                    path:'accountdetails/:faccount_id',
+                    name:'accountdetails',
+                    component:AccountDetails
+                },
+                {
                     path:'contract/:trading_id',
                     name:'contract',
                     component:Contract,
                 },
                 {
-                    path:'account',
+                    path:'account/:trading_id',
                     name:'account',
                     component:Account
                 },
@@ -155,6 +175,16 @@ export default new Router({
                     path:'payment',
                     name:'payment',
                     component:Payment
+                },
+                {
+                    path:'logistics',
+                    name:'logistics',
+                    component:Logistics
+                },
+                {
+                    path:'mobileops',
+                    name:'mobileops',
+                    component:MobileOps
                 }
             ]
         }

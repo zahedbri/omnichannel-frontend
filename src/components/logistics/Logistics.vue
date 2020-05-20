@@ -6,8 +6,7 @@
                     <h1 class="breadcrumb">Payment Management</h1>
                     <div>
                         <b-dropdown variant="primary" size="sm" right text="Create">
-                            <b-dropdown-item v-b-modal.paymethod-modal >Add payment method</b-dropdown-item>
-                            <b-dropdown-item v-b-modal.returnmethod-modal >Add return payment method</b-dropdown-item>
+                            <b-dropdown-item v-b-modal.shipmode-modal >Add delivery arrangement</b-dropdown-item>
                         </b-dropdown>
                     </div>
                 </div>
@@ -32,7 +31,7 @@
                                 </b-col>
                             </b-card-header>
                             <b-card-body>
-                                <b-table :filter="filter" @filtered="onFiltered" bordered show-empty striped hover :current-page="currentPage" :per-page="perPage" :items="paymethoditems" :fields="paymethodfields">
+                                <b-table :filter="filter" @filtered="onFiltered" bordered show-empty striped hover :current-page="currentPage" :per-page="perPage" :items="shipmethoditems" :fields="shipmethodfields">
                                     <template v-slot:head(_)>
                                         <div class="d-flex align-items-center justify-content-center">
                                             <b-button disabled class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="far fa-trash-alt"></i></b-button>
@@ -42,7 +41,7 @@
                                     <template v-slot:head(*)>
                                         <div class="d-flex align-items-center justify-content-center">
                                             <a disabled class="img-sim d-flex justify-content-center align-items-center c-pointer">
-                                                <i class="far fa-credit-card text-gray"></i>
+                                                <i class="fas fa-shipping-fast text-gray"></i>
                                             </a>
                                         </div>
                                     </template>
@@ -55,7 +54,7 @@
                                     <template v-slot:cell(*)>
                                         <div class="d-flex align-items-center justify-content-center">
                                             <a disabled class="img-sim d-flex justify-content-center align-items-center c-pointer">
-                                                <i class="far fa-credit-card white-text"></i>
+                                                <i class="fas fa-shipping-fast"></i>
                                             </a>
                                         </div>
                                     </template>
@@ -66,70 +65,72 @@
                 </b-row>
             </b-container>
         </section>
-        <b-modal ref="returnmethod-modal" size="md" id="returnmethod-modal" title="Return Payment Method" hide-footer>
+        <b-modal ref="shipmode-modal" size="md" id="shipmode-modal" title="Delivery Arrangements" hide-footer>
             <b-container class="px-0">
                 <b-row>
                     <b-col cols="12" class="px-0">
-                        <form @submit.prevent="submitreturnpolicy" class="card shadow-none mb-0">
+                        <form @submit.prevent="submitshipmode" class="card shadow-none mb-0">
                             <b-card-body class="py-0">
                                 <b-row>
                                     <b-col sm="12" md="12">
                                         <div class="form-group mb-2">
-                                            <label class="form-label">Return Method Name</label>
-                                            <b-form-input required type="text" placeholder="e.g. Original Payment Method, Line of Credit" v-model="returnpolicy.policyname" size="sm"></b-form-input>
+                                            <label class="form-label">Carrier</label>
+                                            <b-form-input type="text" size="sm" required v-model="shipmode.carrier" placeholder="Carrier's Name"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Warehouse</label>
+                                            <b-form-select size="sm" v-model="shipmode.ffmcenter_id" :options="warehouseoptions" required></b-form-select>
                                         </div>
                                     </b-col>
                                     <b-col sm="12" md="12">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Store</label>
-                                            <b-form-select size="sm" v-model="returnpolicy.storeent_id" :options="storeoptions" required></b-form-select>
+                                            <b-form-select size="sm" @change="getjurstdata" v-model="shipmode.storeent_id" :options="storeoptions" required></b-form-select>
                                         </div>
                                     </b-col>
                                     <b-col sm="12" md="12">
                                         <div class="form-group mb-2">
-                                            <label class="form-label">Description</label>
-                                            <b-form-textarea :rows="1" :max-rows="6" v-model="returnpolicy.description" placeholder="Brief description."></b-form-textarea>
+                                            <b-form-checkbox id="checkbox-1" v-model="shipmode.timelimited" name="checkbox-1" value="Yes" unchecked-value="No">
+                                                This is a time limited shipping arrangement &mdash; <strong>{{ shipmode.timelimited }}</strong>
+                                            </b-form-checkbox>
+                                        </div>
+                                    </b-col>
+                                    <b-col v-if="shipmode.timelimited=='Yes'" sm="6" md="6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Starting</label>
+                                            <b-form-datepicker size="sm" type="text" v-model="shipmode.startdate" placeholder="Beginning Date"></b-form-datepicker>
+                                        </div>
+                                    </b-col>
+                                    <b-col v-if="shipmode.timelimited=='Yes'" sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Ending</label>
+                                            <b-form-datepicker size="sm" type="text" v-model="shipmode.enddate" placeholder="Termination Date"></b-form-datepicker>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Jurisdiction</label>
+                                            <b-form-select size="sm" v-model="shipmode.jurstgroup_id" :options="jurstgroupoptions" required></b-form-select>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Charges</label>
+                                            <b-form-select size="sm" v-model="shipmode.calcode_id" :options="calcodeoptions" required></b-form-select>
+                                        </div>
+                                    </b-col>
+                                    <b-col md="12">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Name of Shipping Mode</label>
+                                            <b-form-input type="text" v-model="shipmode.description" placeholder="Name"></b-form-input>
                                         </div>
                                     </b-col>
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary btn-sm" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
-                            </b-card-footer>
-                        </form>
-                    </b-col>
-                </b-row>
-            </b-container>
-        </b-modal>
-        <b-modal ref="paymethod-modal" size="md" id="paymethod-modal" title="New Payment Method" hide-footer>
-            <b-container class="px-0">
-                <b-row>
-                    <b-col cols="12" class="px-0">
-                        <form @submit.prevent="submitpolicy" class="card shadow-none mb-0">
-                            <b-card-body class="py-0">
-                                <b-row>
-                                    <b-col sm="12" md="12">
-                                        <div class="form-group mb-2">
-                                            <label class="form-label">Payment Method Name</label>
-                                            <b-form-input required type="text" placeholder="e.g. Credit Card, Cash On Delivery" v-model="policy.policyname" size="sm"></b-form-input>
-                                        </div>
-                                    </b-col>
-                                    <b-col sm="12" md="12">
-                                        <div class="form-group mb-2">
-                                            <label class="form-label">Store</label>
-                                            <b-form-select size="sm" v-model="policy.storeent_id" :options="storeoptions" required></b-form-select>
-                                        </div>
-                                    </b-col>
-                                    <b-col sm="12" md="12">
-                                        <div class="form-group mb-2">
-                                            <label class="form-label">Description</label>
-                                            <b-form-textarea :rows="1" :max-rows="6" v-model="policy.description" placeholder="Brief description."></b-form-textarea>
-                                        </div>
-                                    </b-col>
-                                </b-row>
-                            </b-card-body>
-                            <b-card-footer class="text-right">
-                                <button class="btn btn-primary btn-sm" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -147,7 +148,7 @@
 import requester from "@/services/requester"
 import * as JQuery from "jquery"
 export default {
-    name:"payment",
+    name:"logistics",
     data(){
         return {
             ac_token:requester.getfromlocalstorage("access_token"),
@@ -166,18 +167,18 @@ export default {
             profile:requester.getfromlocalstorage("profile"),
 
             storeoptions:[{value:null,text:"Select Store"}],
+            warehouseoptions:[{value:null,text:"Select Warehouse"}],
+            calcodeoptions:[{value:null,text:"Select Charges"}],
+            jurstgroupoptions:[{value:null,text:"Select Jurisdiction"}],
 
-            policy:{
-                policyname:null,policytype_id:'Payment',storeent_id:null,properties:null,
-                starttime:null,endtime:null,language_id:requester.getfromlocalstorage("language_id"),
-                description:null,timecreated:null,timeupdated:null
+            shipmethoditems:[],shipmethodfields:[],
+
+            shipmode:{
+                policytype_id:'ShippingMode',storeent_id:null,code:null,carrier:null,
+                language_id:requester.getfromlocalstorage("language_id"),
+                description:null,ffmcenter_id:null,timelimited:"Yes",
+                startdate:null,enddate:null,jurstgroup_id:null,calcode_id:null
             },
-            returnpolicy:{
-                policyname:null,policytype_id:'ReturnPayment',storeent_id:null,properties:null,
-                starttime:null,endtime:null,language_id:requester.getfromlocalstorage("language_id"),
-                description:null,timecreated:null,timeupdated:null
-            },
-            paymethoditems:[],paymethodfields:[],
         }
     },
     created(){
@@ -190,22 +191,22 @@ export default {
             console.log(textStatus)
             console.log(errorThrown)
         })
-        var paymethoddata=storedata.then(result=>{
+        var warehousedata=storedata.then(result=>{
             result.forEach((item)=>{
                 this.storeoptions.push({value:item.storeent_id,text:item.identifier})
             })
-            return requester.ajax_request("/api/v1.0/list_payment_policies","POST",this.ac_token,this.rf_token,true,{policytype_id:'Payment',language_id:this.language_id})
+            return requester.ajax_request("/api/v1.0/read_ffmcenter","POST",this.ac_token,this.rf_token,true,{member_id:this.employer})
         })
-        var returnpolicydata=paymethoddata.then(result=>{
-            this.paymethoditems=result
-            this.paymethodfields=['*','name','type','store','description','created','updated','_']
-            this.totalRows=result.length
-            return requester.ajax_request("/api/v1.0/list_payment_policies","POST",this.ac_token,this.rf_token,true,{policytype_id:'ReturnPayment',language_id:this.language_id})
-        })
-        returnpolicydata.then(result=>{
+        var shippingdata=warehousedata.then(result=>{
             result.forEach((item)=>{
-                this.paymethoditems.push(item)
+                this.warehouseoptions.push({text:item.name,value:item.ffmcenter_id})
             })
+            return requester.ajax_request("/api/v1.0/list_shipping_policies","POST",this.ac_token,this.rf_token,true,{policytype_id:'ShippingMode',language_id:this.language_id})
+        })
+        shippingdata.then(result=>{
+            this.shipmethoditems=result
+            this.shipmethodfields=['*','name','type','store','description','created','updated','_']
+            this.totalRows=result.length
         })
     },
     methods:{
@@ -213,30 +214,33 @@ export default {
             this.totalRows=filteredItems.length
             this.currentPage=1
         },
-        submitreturnpolicy(){
-            const payload={...this.returnpolicy}
-            requester.ajax_request("/api/v1.0/create_paymethod_policy","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
-                this.success_message=result.msg
-                this.showSnackbar=true
-                this.paymethoditems=result.paymentpolicies
-                this.paymethodfields=['*','name','type','store','description','created','updated','_']
-                this.totalRows=result.paymentpolicies.length
-            }).fail((jqXHR,textStatus,errorThrown) => {
-                this.success_message=jqXHR.responseJSON.msg
-                this.showSnackbar=true
-                console.log(jqXHR.responseJSON)
-                console.log(textStatus)
-                console.log(errorThrown)
+        getjurstdata(e){
+            console.log(e)
+            var calcodedata=requester.ajax_request("/api/v1.0/read_jurstgroup","POST",this.ac_token,this.rf_token,true,{storeent_id:e,subclass:1}).then(result=>{
+                result.forEach((item)=>{
+                    this.jurstgroupoptions.push({value:item.jurstgroup_id,text:item.description})
+                })
+                return requester.ajax_request("/api/v1.0/read_calcode","POST",this.ac_token,this.rf_token,true,{storeent_id:e,language_id:this.language_id,usages:[2]})
+            })
+            calcodedata.then(result=>{
+                result.forEach((item)=>{
+                    this.calcodeoptions.push({value:item.calcode_id,text:item.description})
+                })
             })
         },
-        submitpolicy(){
-            const payload={...this.policy}
-            requester.ajax_request("/api/v1.0/create_paymethod_policy","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+        submitshipmode(){
+            const payload={...this.shipmode}
+            payload.code='SHP/'+this.shipmode.storeent_id+'/'+this.shipmode.ffmcenter_id+'/'+this.shipmode.jurstgroup_id
+            requester.ajax_request("/api/v1.0/create_shipmode_policy","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
-                this.paymethoditems=result.paymentpolicies
-                this.paymethodfields=['*','name','type','store','description','created','updated','_']
-                this.totalRows=result.paymentpolicies.length
+
+                this.shipmethoditems=result.shipmodes
+                this.shipmethodfields=['*','name','type','store','description','created','updated','_']
+                this.totalRows=result.shipmodes.length
+
+                this.$refs['shipmode-modal'].hide()
             }).fail((jqXHR,textStatus,errorThrown) => {
                 this.success_message=jqXHR.responseJSON.msg
                 this.showSnackbar=true

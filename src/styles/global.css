@@ -1645,6 +1645,10 @@ nav.navbar {
   .bg-warning {
     background-color: #ffc107 !important;
   }
+
+  .bg-white {
+    background-color: #fff !important;
+  }
   
   a.bg-warning:focus, a.bg-warning:hover {
     background-color: #d39e00 !important;
@@ -2736,4 +2740,16 @@ table {
 .inv-list-img {
 	width: auto !important;
 	height: 50px !important;
+}
+
+.img-sim {
+	/* margin-right: 10px; */
+	width: 30px;
+	height: 30px;
+	border: 1px solid #e9ecef;
+	border-radius: .25rem !important;
+}
+
+div.tabs .card-header {
+  background: #ffffff !important;
 }

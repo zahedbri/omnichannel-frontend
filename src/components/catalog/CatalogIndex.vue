@@ -5,8 +5,9 @@
                 <div class="d-flex  align-items-center justify-content-between">
                     <h1 class="breadcrumb">Product Catalog</h1>
                     <div>
-                        <b-dropdown variant="primary" size="sm" right text="New catalog">
+                        <b-dropdown variant="success" size="sm" right text="New catalog">
                             <b-dropdown-item v-b-modal.new-catalog-modal>Add new catalog</b-dropdown-item>
+                            <!-- <b-dropdown-item v-b-modal.multiple-catalog-modal>Define multiple catalogs</b-dropdown-item> -->
                             <b-dropdown-item v-b-modal.new-category-modal>Add new category</b-dropdown-item>
                             <b-dropdown-item v-b-modal.new-item-modal>Add new product</b-dropdown-item>
                             <b-dropdown-item>Add multiple products</b-dropdown-item>
@@ -172,7 +173,7 @@
                                             <div class="media-body overflow-hidden">
                                                 <h5 class="card-text mb-0 text-xsmall">{{item.name}}</h5>
                                                 <p class="card-text mb-1 text-uppercase" style="font-size:0.6rem !important;">{{item.catenttype_id}}</p>
-                                                <strike><p class="card-text mb-0"> {{item.category}} </p></strike>
+                                                <p class="card-text mb-0"> {{item.category}} </p>
                                                 <p class="card-text">Price {{item.symbol}}{{item.price}}</p>
                                             </div>
                                         </div>
@@ -213,8 +214,18 @@
                 </b-row>
             </b-container>
         </b-modal>
-        <b-modal ref="new-category-modal" size="md" id="new-category-modal" title="New Category" hide-footer>
-            <b-container class="px-0">
+        <b-modal body-class="py-0" ref="new-category-modal" size="md" id="new-category-modal" title="New Category" hide-footer>
+            <template v-slot:modal-header>
+                <h5>Add Product Category</h5>
+                <div>
+                    <b-dropdown variant="success" size="sm" left :text="defaultcategoryoption ? 'New Category' : 'Multiple Categories' ">
+                        <b-dropdown-item @click="defaultcategoryoption=true">New Category</b-dropdown-item>
+                        <b-dropdown-item @click="defaultcategoryoption=false">Multiple Categories</b-dropdown-item>
+                    </b-dropdown>
+                    <button type="button" aria-label="Close" class="close">×</button>
+                </div>
+            </template>
+            <b-container v-if="defaultcategoryoption==true" class="px-0">
                 <b-row>
                     <b-col cols="12" class="px-0">
                         <form class="card shadow-none mb-0" @submit.prevent="submitnewcategory">
@@ -259,7 +270,7 @@
             <template v-slot:modal-header>
                 <h5>Add Inventory Item</h5>
                 <div>
-                    <b-dropdown variant="primary" size="sm" left :text="defaultoption ? 'Product' : 'Composite' ">
+                    <b-dropdown variant="success" size="sm" left :text="defaultoption ? 'Product' : 'Composite' ">
                         <b-dropdown-item @click="defaultoption=true">Product</b-dropdown-item>
                         <b-dropdown-item @click="defaultoption=false">Composite</b-dropdown-item>
                     </b-dropdown>
@@ -644,13 +655,15 @@ export default {
             currentPage:1,totalRows:null,perPage:10,
             perPage2:12,currentPage2:1,totalRows2:null,
             perPage3:6,currentPage3:1,totalRows3:null,
-            filter:null,
-            defaultoption:true,
+            perPage4:6,currentPage4:1,totalRows4:null,
+            filter:null,defaultoption:true,
+            defaultcategoryoption:true,
             attrvaluevisible:false,
             settings: {maxScrollbarLength: 100},
             
-            relfields:["container_product","content_product","quantity"],
-            relitems:[],
+            relfields:["container_product","content_product","quantity"],relitems:[],
+            templateitems:[{catalog:null,category:null,description:null}],
+            templatefields:['catalog','category','description'],
             ac_token:requester.getfromlocalstorage("access_token"),
             rf_token:requester.getfromlocalstorage("refresh_token"),
             success_message:null,
@@ -723,12 +736,21 @@ export default {
             language_id:requester.getfromlocalstorage("language_id")},
             catentryitems:[],catentrysplits:[],combinedcatentries:[],
             inventoryitems:[],inventoryfields:[],islist:false,isgrid:true,
+            catalogfilelabelvalue:null,
         }
     },
     computed:{
     },
     created(){
-        var catlistdata=requester.ajax_request("/api/v1.0/read_catalogs","POST",this.ac_token,this.rf_token,true,{member_id:this.employer_id,language_id:this.language_id})
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var catlistdata=verification.then(result=>{
+            return requester.ajax_request("/api/v1.0/read_catalogs","POST",this.ac_token,this.rf_token,true,{member_id:this.employer_id,language_id:this.language_id})
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var catgroupdata=catlistdata.then(result=>{
             this.cataloglists=result
             result.forEach((item)=>{
@@ -745,6 +767,7 @@ export default {
             return requester.ajax_request("/api/v1.0/list_catentries","POST",this.ac_token,this.rf_token,true,{member_id:this.employer_id,language_id:this.language_id})
         })
         var accountlist=catentrylist.then(result => {
+            console.log(result)
             this.catentries=result
             return requester.ajax_request("/api/v1.0/list_accounts","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id})
         })
@@ -786,6 +809,23 @@ export default {
         })
     },
     methods:{
+        previewcatalogfile(){
+            let formdata = new FormData()
+            let input = this.$refs.catalogfile.files[0]
+            formdata.append("image",input)
+            this.catalogfilelabelvalue=input.name
+            JQuery.ajax({url:requester.baseurl+"/datafileuploads",type:"POST",data:formdata,
+			cache:false,processData:false,contentType:false,}).done(result => {
+                this.success_message = "Successfully uploaded "+result.name+" to storage."
+                this.showSnackbar = true
+                // this.warehouseinfo.photourl=result.url
+                console.log(result)
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },        
         changeview(v){
             if(v=="g"){this.isgrid=true;this.islist=false;}
             else if(v=="l"){this.isgrid=true;this.islist=false;}

@@ -288,7 +288,16 @@ export default {
         this.addmbrrole()
     },
     created(){
-        var usersdata=requester.ajax_request("/api/v1.0/list_all_members","GET",this.ac_token,this.rf_token,false,null)
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var usersdata=verification.then(result=>{
+            // console.log(result)
+            return requester.ajax_request("/api/v1.0/list_all_members","GET",this.ac_token,this.rf_token,false,null)
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var rolesdata=usersdata.then(result => {
             console.log(result)
             result.forEach((item)=>{
@@ -348,14 +357,12 @@ export default {
                 this.userstableitems=[]
                 console.log(result)
                 result.usersdata.forEach((item)=>{
-
-                if(item.member.type=='O'){
-                    this.userstableitems.push({state:item.member.state,identifier:item.orgentity.orgentityname,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
-                }
-                if(item.member.type=='U'){
-                    this.userstableitems.push({state:item.member.state,identifier:item.users.field1+' '+item.users.field2+' '+item.users.field3,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
-                }
-                    // this.userstableitems.push({identifier:item.orgentity.orgentityname,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
+                    if(item.member.type=='O'){
+                        this.userstableitems.push({state:item.member.state,identifier:item.orgentity.orgentityname,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
+                    }
+                    if(item.member.type=='U'){
+                        this.userstableitems.push({state:item.member.state,identifier:item.users.field1+' '+item.users.field2+' '+item.users.field3,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
+                    }
                 })
             })
         },
@@ -377,7 +384,6 @@ export default {
                     if(item.member.type=='U'){
                         this.userstableitems.push({state:item.member.state,identifier:item.users.field1+' '+item.users.field2+' '+item.users.field3,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
                     }
-                    // this.userstableitems.push({identifier:item.orgentity.orgentityname,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
                 })
             })
         },
@@ -456,6 +462,7 @@ export default {
         },
         addnewstaff(){
             const payload={...this.newstaff}
+            console.log(payload)
             requester.ajax_request("/api/v1.0/create_business_user","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 console.log(result)
                 this.success_message=result.msg

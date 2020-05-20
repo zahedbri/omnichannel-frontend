@@ -25,6 +25,7 @@
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/catalogindex')"><i class="fas fa-boxes mr-1"></i>Catalog</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/vendor')"> <i class="fas fa-dolly mr-1"></i>Vendors</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/payment')"> <i class="fab fa-cc-amazon-pay mr-1"></i>Payment</a></li>
+                        <li class="c-pointer"><a @click="gotopath('/scaffolding/logistics')"> <i class="fas fa-shipping-fast mr-1"></i>Logistics</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/chartofaccounts')"><i class="fas fa-book mr-1"></i>Reports</a></li>
                     </ul>
                 </div>
@@ -67,7 +68,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link logout">
+                                    <a @click="logout" class="nav-link logout c-pointer">
                                         <span class="d-none d-sm-inline-block">Logout</span>
                                         <i class="fas fa-sign-out-alt"></i>
                                     </a>
@@ -83,14 +84,28 @@
 </template>
 
 <script>
+import requester from "@/services/requester"
 export default {
     name:"scaffolding",
     data(){
         return {
             shrinkClass:true,
+            ac_token:requester.getfromlocalstorage("access_token"),
+            rf_token:requester.getfromlocalstorage("refresh_token"),
         }
     },
     methods:{
+        logout(){
+            var logoutaccess=requester.ajax_request("/api/v1.0/logout_access","POST",this.ac_token,this.rf_token,false,null)
+            var logoutrefresh=logoutaccess.then(result=>{
+                console.log(result)
+                return requester.ajax_request("/api/v1.0/logout_refresh","POST",this.rf_token,this.ac_token,false,null)
+            })
+            logoutrefresh.then(result=>{
+                console.log(result)
+                this.$router.push({path:'/login'})
+            })
+        },
         gotopath(pth){
             this.$router.push( {path:pth} )
         },

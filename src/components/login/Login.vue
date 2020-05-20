@@ -110,7 +110,7 @@ export default {
                 requester.savetolocalstorage("refresh_token", result.refresh_token)
                 this.success_message=result.msg
                 this.showSnackbar=true
-                console.log(result)
+                // console.log(result)
                 requester.savetolocalstorage("user_id",result.user_id)
                 requester.savetolocalstorage("employer",result.employer.employer)
                 requester.savetolocalstorage("employername",result.employer.employername)
@@ -119,7 +119,7 @@ export default {
                 requester.savetolocalstorage("rolename",result.roles[0].rolename)
                 requester.savetolocalstorage("language_id",result.language_id)
                 requester.savetolocalstorage("profile",result.profile)
-                result.user_id==result.employer.employer ? this.$router.push({path:`/scaffolding/companyprofile/${result.user_id}`}) : this.$router.push({path:`/scaffolding/userprofile/${result.user_id}`})
+                result.user_id==result.employer.employer ? this.$router.push({path:`/scaffolding/editcompanyprofile/${result.user_id}`}) : this.$router.push({path:`/scaffolding/userprofile/${result.user_id}`})
             }).fail((jqXHR, textStatus, errorThrown)=>{
                 console.log(errorThrown)
                 this.success_message=jqXHR.responseJSON.msg

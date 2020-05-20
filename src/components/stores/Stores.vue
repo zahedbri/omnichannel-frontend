@@ -487,8 +487,16 @@ export default {
         }
     },
     created(){
-        if(this.employername){this.hostwarehouse=true}
-        var currdata=requester.ajax_request("/api/v1.0/list_currencies","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var currdata=verification.then(result=>{
+            if(this.employername){this.hostwarehouse=true}
+            return requester.ajax_request("/api/v1.0/list_currencies","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var countrydata=currdata.then(result=>{
             this.currselect=result
             return requester.ajax_request_no_tokens("/api/v1.0/list_countries","GET",false,null)

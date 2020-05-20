@@ -18,7 +18,7 @@
                 <b-row class="d-flex justify-content-center align-items-center">
                     <b-col cols="12">
                         <b-card no-body>
-                            <b-card-body>
+                            <!-- <b-card-body>
                                 <b-row>
                                     <b-col cols="5" class="text-center d-flex justify-content-end align-items-center">
                                         <img :src="logoimg" alt="..." style="max-width: 6rem;" class="img-fluid">
@@ -31,10 +31,10 @@
                                         </div>
                                     </b-col>
                                 </b-row>
-                            </b-card-body>
-                            <b-card-header class="d-flex align-items-center justify-content-end">
+                            </b-card-body> -->
+                            <b-card-header class="pt-2 pb-2 bg-white d-flex align-items-center justify-content-end">
                                 <div>
-                                    <div v-if="openindicator=='N'" class="badge badge-danger"><strong>STATUS &mdash;</strong> Close</div>
+                                    <div v-if="openindicator=='N'" class="badge badge-danger"><strong>STATUS &mdash;</strong> Closed</div>
                                     <div v-else-if="openindicator=='Y'" class="badge badge-primary"><strong>STATUS &mdash;</strong> Open</div>
                                 </div>
                             </b-card-header>
@@ -96,7 +96,7 @@
                                             </template>
                                         </div>
                                     </b-col>
-                                    <b-col sm="4" md="4">
+                                    <b-col sm="5" md="5">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Receipt Date</label>
                                             <b-form-datepicker required size="sm" type="text" v-model="receipt.receiptdate" placeholder="Receipt Date"></b-form-datepicker>
@@ -108,22 +108,22 @@
                                             <b-form-input size="sm" v-model="receipt.qtyreceived" :max="receipt.qtyremaining" type="number" step="1" placeholder="Quantity Received" required></b-form-input>
                                         </div>
                                     </b-col>
-                                    <b-col sm="4" md="4">
+                                    <b-col sm="3" md="3">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Quantity In Process</label>
-                                            <b-form-input size="sm" v-model="receipt.qtyinprocess" type="number" step="1" placeholder="Quantity In Process" required></b-form-input>
+                                            <b-form-input size="sm" readonly v-model="receipt.qtyinprocess" type="number" step="1" placeholder="Quantity In Process" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Quantity On Hand</label>
-                                            <b-form-input size="sm" v-model="receipt.qtyonhand" type="number" step="1" placeholder="Quantity On Hand" required></b-form-input>
+                                            <b-form-input size="sm" readonly v-model="receipt.qtyonhand" type="number" step="1" placeholder="Quantity On Hand" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Quantity In Kits</label>
-                                            <b-form-input size="sm" v-model="receipt.qtyinkits" type="number" step="1" placeholder="Quantity In Kits" required></b-form-input>
+                                            <b-form-input size="sm" readonly v-model="receipt.qtyinkits" type="number" step="1" placeholder="Quantity In Kits" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
@@ -166,7 +166,7 @@
                                         <div class="form-group mb-2">
                                             <label class="form-label">Item</label>
                                             <template>
-                                                <b-form-input required placeholder="Fill &amp; Select Inventory Item" v-model="radetail.catentryname" @change.native="selecteditem" size="sm" list="catentry-list"></b-form-input>
+                                                <b-form-input @change="getitemprices" required placeholder="Fill &amp; Select Inventory Item" v-model="radetail.catentryname" @change.native="selecteditem" size="sm" list="catentry-list"></b-form-input>
                                                 <datalist id="catentry-list">
                                                     <option>Select Item</option>
                                                     <option v-for="catentry in catentries" :key="catentry.itemspc_id">{{catentry.name}}</option>
@@ -198,13 +198,18 @@
                                             <b-form-input size="sm" readonly v-model="radetail.qtyallocated" type="number" step="1" placeholder="Quantity Allocated" required></b-form-input>
                                         </div>
                                     </b-col>
+                                    <b-col cols="12" class="mt-2 mb-1" v-if="radetail.catentryname != null">
+                                        <b-table small striped bordered :fields="pricesfields" :items="pricesitems" caption-top responsive="sm">
+                                            <template v-slot:table-caption><span class="text-xsmall">Table for information purposes.</span></template>
+                                        </b-table>
+                                    </b-col>
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Per Unit Cost</label>
                                             <b-form-input size="sm" v-model="radetail.cost" type="number" step="1" placeholder="Per Unit Cost" required></b-form-input>
                                         </div>
                                     </b-col>
-                                    <b-col sm="3" md="4">
+                                    <b-col sm="3" md="3">
                                         <div class="form-group mb-4">
                                             <label class="form-label">Currency</label>
                                             <template>
@@ -216,7 +221,7 @@
                                             </template>
                                         </div>
                                     </b-col>
-                                    <b-col sm="4" md="4">
+                                    <b-col sm="5" md="5">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Expected Date</label>
                                             <b-form-datepicker required size="sm" type="text" v-model="radetail.expecteddate" placeholder="Expected Date"></b-form-datepicker>
@@ -258,6 +263,7 @@ export default {
 
             currentPage:1,totalRows:null,perPage:6,filter:null,
             currentPage2:1,totalRows2:null,perPage2:6,filter2:null,
+            currentPage3:1,totalRows3:null,perPage3:6,filter3:null,
             
             user_id:requester.getfromlocalstorage("user_id"),
             employer:requester.getfromlocalstorage("employer"),
@@ -283,11 +289,20 @@ export default {
                 vendor_id:null,receiptdate:null,qtyreceived:null,qtyinprocess:null,qtyonhand:null,qtyinkits:null,
                 cost:null,comment1:null,lastupdate:null,createtime:null,receipttype:null,rtnrcptdsp_id:null,
                 qtyremaining:null,ra_id:this.$route.params.ra_id
-            }
+            },
+            pricesitems:[],pricesfields:[],
         }
     },
     created(){
-        var radata=requester.ajax_request("/api/v1.0/get_ra","POST",this.ac_token,this.rf_token,true,{ra_id:this.ra_id})
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var radata=verification.then(result=>{
+            return requester.ajax_request("/api/v1.0/get_ra","POST",this.ac_token,this.rf_token,true,{ra_id:this.ra_id})
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var imagedata=radata.then(result=>{
             // console.log(result)
             this.openindicator=result.openindicator
@@ -338,6 +353,13 @@ export default {
         })
     },
     methods:{
+        getitemprices(e){
+            requester.ajax_request("/api/v1.0/item_price_default_trading","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id,name:e}).done(result=>{
+                this.pricesitems=result
+                this.pricesfields=['contract','name','currency','price']
+                this.totalrows3=result.length
+            })
+        },
         submitreceipt(){
             const payload={...this.receipt}
             console.log(payload)
@@ -345,7 +367,7 @@ export default {
                 console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
-
+                this.openindicator=result.indicator
                 this.detailsitems=result.detailsitems
                 this.totalRows=result.detailsitems.length
                 this.detailsfields=['warehouse','item','ordered','received','remaining','allocated','expected_on','updated_on','_']
@@ -377,7 +399,7 @@ export default {
         },
         receiveitem(row){
             let radetail_id=row.item.radetail_id
-            requester.ajax_request("/api/v1.0/receive_inventory","POST",this.ac_token,this.rf_token,true,{radetail_id:radetail_id}).done(result=>{
+            requester.ajax_request("/api/v1.0/receive_inventory","POST",this.ac_token,this.rf_token,true,{radetail_id:radetail_id,store_id:this.store_id}).done(result=>{
                 console.log(result)
                 if(result.versionspc_id!=null){
                     this.receipt.versionspc_id=result.versionspc_id
@@ -403,7 +425,7 @@ export default {
                 // TODO nullify receiptdate so this sets a new record
                 // this.receipt.receiptdate=result.receiptdate.split(' ')[0]
                 this.receipt.qtyremaining=result.qtyremaining
-                this.receipt.qtyreceived=result.qtyreceived
+                // this.receipt.qtyreceived=result.qtyreceived
                 this.receipt.qtyinprocess=result.qtyinprocess
                 this.receipt.qtyonhand=result.qtyonhand
                 this.receipt.qtyinkits=result.qtyinkits
@@ -413,6 +435,12 @@ export default {
                 this.receipt.createtime=result.createtime
                 this.receipt.receipttype=result.receipttype
                 this.receipt.rtnrcptdsp_id=result.rtnrcptdsp_id
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
             })
         },
         changedreceiptcurrency(e){
@@ -444,6 +472,7 @@ export default {
                 this.showSnackbar=true
                 this.detailsitems=result.detailsitems
                 this.totalRows=result.detailsitems.length
+                this.openindicator=result.indicator
                 this.detailsfields=['warehouse','item','ordered','received','remaining','allocated','expected_on','updated_on','_']
                 this.$refs['radetail-modal'].hide()
             }).fail((jqXHR,textStatus,errorThrown) => {

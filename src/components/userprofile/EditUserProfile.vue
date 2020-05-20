@@ -16,8 +16,8 @@
                             <b-card-body class="text-center">
                                 <img v-if="profileimg==null" class="card-profile-img" :src="defaultavatar">
                                 <img v-else-if="profileimg!=null" class="card-profile-img" :src="profileimg">
-                                <h3 class="mb-3">{{business.orgentityname}}</h3>
-                                <p class="mb-4">{{business.description}}</p>
+                                <h3 class="mb-3">{{business.field1}} {{business.field3}}</h3>
+                                <!-- <p class="mb-4">{{business.description}}</p> -->
                                 <button class="btn btn-outline-dark btn-sm">
                                     <i class="fas fa-edit mr-1"></i><span class="text-secondary">Edit</span>
                                 </button>
@@ -29,7 +29,7 @@
                                     <span v-if="profileimg==null" :style="{backgroundImage:`url(${defaultavatar})`}" class="avatar avatar-xl mr-3"></span>
                                     <span v-else-if="profileimg!=null" :style="{backgroundImage:`url(${profileimg})`}" class="avatar avatar-xl mr-3"></span>
                                     <div class="media-body">
-                                        <h4>{{ business.orgentityname }}</h4>
+                                        <h4>{{ business.field1 }} {{business.field3}}</h4>
                                         <p class="text-muted mb-0">Primary Role</p>
                                         <ul class="social-links list-inline mb-0 mt-2">
                                             <li class="list-inline-item">
@@ -74,58 +74,58 @@
                                                 <b-card-body>
                                                     <h3 class="card-title">Edit Business Information</h3>
                                                     <b-row>
-                                                        <b-col md="5">
-                                                            <div class="form-group mb-4">
-                                                                <label class="form-label">Company name</label>
-                                                                <b-form-input size="sm" type="text" v-model="business.orgentityname" placeholder="Company name" required></b-form-input>
-                                                            </div>
-                                                        </b-col>
-                                                        <b-col sm="6" md="3">
-                                                            <div class="form-group mb-4">
-                                                                <label class="form-label">Legal ID</label>
-                                                                <b-form-input size="sm" type="text" v-model="business.legalid" placeholder="Registration number"></b-form-input>
-                                                            </div>
-                                                        </b-col>
-                                                        <b-col sm="6" md="4">
-                                                            <div class="form-group mb-4">
-                                                                <label class="form-label">Tax ID</label>
-                                                                <b-form-input size="sm" type="text" v-model="business.taxpayerid" placeholder="Tax identification"></b-form-input>
-                                                            </div>
-                                                        </b-col>
-                                                        <b-col sm="6" md="6">
-                                                            <div class="form-group mb-4">
-                                                                <label class="form-label">Business category</label>
-                                                                <b-form-input size="sm" type="text" v-model="business.businesscategory" placeholder="Business category"></b-form-input>
-                                                            </div>
-                                                        </b-col>
-                                                        <b-col sm="6" md="6">
+                                                        <b-col md="4">
                                                             <div class="form-group mb-4">
                                                                 <label class="form-label">First Name</label>
-                                                                <b-form-input size="sm" type="text" v-model="business.adminfirstname" placeholder="CEO's first name"></b-form-input>
+                                                                <b-form-input size="sm" type="text" v-model="business.field1" placeholder="First Name" required></b-form-input>
                                                             </div>
                                                         </b-col>
-                                                        <b-col sm="6" md="6">
+                                                        <b-col md="4">
                                                             <div class="form-group mb-4">
                                                                 <label class="form-label">Middle Name</label>
-                                                                <b-form-input size="sm" type="text" v-model="business.adminmiddlename" placeholder="CEO's middle name"></b-form-input>
+                                                                <b-form-input size="sm" type="text" v-model="business.field2" placeholder="Middle Name"></b-form-input>
                                                             </div>
                                                         </b-col>
-                                                        <b-col sm="6" md="6">
+                                                        <b-col md="4">
                                                             <div class="form-group mb-4">
                                                                 <label class="form-label">Last Name</label>
-                                                                <b-form-input size="sm" type="text" v-model="business.adminlastname" placeholder="CEO's last name"></b-form-input>
+                                                                <b-form-input size="sm" type="text" v-model="business.field3" placeholder="Last Name" required></b-form-input>
                                                             </div>
                                                         </b-col>
-                                                        <b-col md="12">
+                                                        <b-col md="4">
                                                             <div class="form-group mb-4">
-                                                                <label class="form-label">Description</label>
-                                                                <b-form-textarea :rows="1" :max-rows="6" v-model="business.description" placeholder="Brief business description"></b-form-textarea>
+                                                                <label class="form-label">Employment Type</label>
+                                                                <b-form-input size="sm" type="text" v-model="business.employeetype" placeholder="e.g., Contract, Permanent, Temp..."></b-form-input>
+                                                            </div>
+                                                        </b-col>
+                                                        <b-col md="4">
+                                                            <div class="form-group mb-4">
+                                                                <label class="form-label">Employment ID</label>
+                                                                <b-form-input size="sm" type="text" v-model="business.employeeid" placeholder="e.g., Contract, Permanent, Temp..."></b-form-input>
+                                                            </div>
+                                                        </b-col>
+                                                        <b-col md="4">
+                                                            <div class="form-group mb-4">
+                                                                <label class="form-label">Manager</label>
+                                                                <b-form-input size="sm" type="text" v-model="business.manager" placeholder="Manager's Name"></b-form-input>
+                                                            </div>
+                                                        </b-col>
+                                                        <b-col md="4">
+                                                            <div class="form-group mb-4">
+                                                                <label class="form-label">Department</label>
+                                                                <b-form-input size="sm" type="text" v-model="business.department" placeholder="Department"></b-form-input>
+                                                            </div>
+                                                        </b-col>
+                                                        <b-col sm="4" md="4">
+                                                            <div class="form-group mb-4">
+                                                                <label class="form-label">Employer</label>
+                                                                <b-form-select size="sm" v-model="business.employer" :options="organizations" required></b-form-select>
                                                             </div>
                                                         </b-col>
                                                     </b-row>
                                                 </b-card-body>
                                                 <b-card-footer class="text-right" style="margin:0rem -1.25rem -1.25rem -1.25rem;">
-                                                    <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                                    <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                                                 </b-card-footer>
                                             </form>
                                         </b-col>
@@ -227,12 +227,6 @@
                                                         </b-col>
                                                         <b-col sm="3" md="3">
                                                             <div class="form-group mb-4">
-                                                                <label class="form-label">City</label>
-                                                                <b-form-input type="text" size="sm" v-model="contact.city" placeholder="City"></b-form-input>
-                                                            </div>
-                                                        </b-col>
-                                                        <b-col sm="3" md="3">
-                                                            <div class="form-group mb-4">
                                                                 <label class="form-label">Country</label>
                                                                 <template>
                                                                     <b-form-input placeholder="Fill &amp; Select Country" v-model="contact.country" @change.native="changedcountry" size="sm" list="country-list"></b-form-input>
@@ -255,10 +249,16 @@
                                                                 </template>
                                                             </div>
                                                         </b-col>
+                                                        <b-col sm="3" md="3">
+                                                            <div class="form-group mb-4">
+                                                                <label class="form-label">City</label>
+                                                                <b-form-input type="text" size="sm" v-model="contact.city" placeholder="City"></b-form-input>
+                                                            </div>
+                                                        </b-col>
                                                     </b-row>
                                                 </b-card-body>
                                                 <b-card-footer class="text-right" style="margin:0rem -1.25rem -1.25rem -1.25rem;">
-                                                    <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                                    <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                                                 </b-card-footer>
                                             </form>
                                         </b-col>
@@ -342,7 +342,7 @@
                                                     </b-row>
                                                 </b-card-body>
                                                 <b-card-footer class="text-right" style="margin:0rem -1.25rem -1.25rem -1.25rem;">
-                                                    <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                                    <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                                                 </b-card-footer>
                                             </form>
                                         </b-col>
@@ -364,8 +364,9 @@
 <script>
 import requester from "@/services/requester"
 import * as JQuery from "jquery"
+
 export default {
-    name:"editcompanyprofile",
+    name:"edituserprofile",
     data(){
         return {
             user_id:this.$route.params.id,
@@ -386,97 +387,71 @@ export default {
             defaultavatar:requester.baseurl+'/static/profileuploads/default-avatar.png',
             defaultheader:requester.baseurl+'/static/profileuploads/default-profile-header.jpg',
             profileimg:null,
-            business:{
-                orgentity_id:this.$route.params.id,
-                orgentitytype:null,
-                legalid:null,
-                orgentityname:null,
-                taxpayerid:null,
-                businesscategory:null,
-                description:null,
-                adminfirstname:null,
-                adminmiddlename:null,
-                adminlastname:null
-            },
+
             addresstypeselect:[{value:null,text:"Select Type"},{value:'S',text:'Shipping Address'},{value:'B',text:'Billing Address'},
             {value:'SB',text:'Shipping & Billing'}],
             statusselect:[{value:null,text:'Select Status'},{value:'P',text:'Permanent / Current'},{value:'T',text:'Temporary Address'}],
-            countryselect:[],
-            stateselect:[],
-            selectedcountry:null,
-            languageselect:[{value:null,text:"Select Language"}],
-            currselect:[],
+            countryselect:[],stateselect:[],selectedcountry:null,
+            languageselect:[{value:null,text:"Select Language"}],currselect:[],
             commspreferences:[{value:null,text:"Select"},{value:"P1",text:"First Phone Number"},
             {value:"P2",text:"Second Phone Number"},{value:"E1",text:"First Email Address"},
             {value:"E2",text:"Second Email Address"}],
+            business:{
+                department:null,employeetype:null,employeeid:null,employer:null,
+                manager:null,field1:null,field2:null,field3:null,setccurr:null,language_id:null,
+                users_id:this.$route.params.id,dn:null,registertype:null,profiletype:null,
+            },
             contact:{
-                address_id:null,
-                member_id:this.$route.params.id,
-                displayname:null,
-                description:null,
-                addresstype:'SB',
-                addrbook_id:null,
-                status:'P',
-                orgname:null,
-                isprimary:1,
-                lastname:null,
-                persontitle:null,
-                firstname:null,
-                middlename:null,
-                businesstitle:null,
-                phone1:null,
-                phone2:null,
-                address1:null,
-                nickname:null,
-                address2:null,
-                city:null,
-                state:null,
-                country:null,
-                zipcode:null,
-                email1:null,
-                email2:null
+                address_id:null,member_id:this.$route.params.id,displayname:null,
+                description:null,addresstype:'SB',addrbook_id:null,status:'P',dn:null,
+                orgname:null,isprimary:1,lastname:null,persontitle:null,firstname:null,middlename:null,
+                businesstitle:null,phone1:null,phone2:null,address1:null,nickname:null,address2:null,
+                city:null,state:null,country:null,zipcode:null,email1:null,email2:null
             },
             preferences:{
-                users_id:this.$route.params.id,
-                language_id:null,
-                setccurr:null,
-                photo:null,
-                description:null,
-                displayname:null,
-                preferredcomm:'P1',
-                rcvsmsnotification:"Yes",
-                registertype:null,
-                status:"not_accepted",
-                dn:null,
-                profiletype:null,
+                users_id:this.$route.params.id,language_id:null,setccurr:null,photo:null,
+                description:null,displayname:null,preferredcomm:'P1',rcvsmsnotification:"Yes",
+                registertype:null,status:"not_accepted",dn:null,profiletype:null,
+                field1:null,field2:null,field3:null
             },
-            secure:{},
-            smsvalues:[null,0,1]
+            secure:{},smsvalues:[null,0,1],allcurrencies:[],organizations:[{value:null,text:"Select Organization"}],
+
         }
     },
     created(){
         var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
-        var readorg=verification.then(result=>{
-            return requester.ajax_request("/api/v1.0/read_organization","POST",this.ac_token,this.rf_token,true,{logonid:this.user_id})
+        var currdata=verification.then(result=>{
+            return requester.ajax_request("/api/v1.0/list_currencies","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
         }).fail((jqXHR,textStatus,errorThrown) => {
             this.$router.push({path:'/login'})
             console.log(jqXHR.responseJSON)
             console.log(textStatus)
             console.log(errorThrown)
         })
-        var countryselect=readorg.then(result=>{
+        var readorg=currdata.then(result=>{
+            this.allcurrencies=result
+            return requester.ajax_request("/api/v1.0/read_organization","POST",this.ac_token,this.rf_token,true,{logonid:this.user_id})
+        })
+        var listorgs=readorg.then(result=>{
             // console.log(result)
-            this.business.legalid=result.orgentity.legalid
-            this.business.orgentityname=result.orgentity.orgentityname
-            this.contact.orgname=result.orgentity.orgentityname
-            this.contact.nickname=result.orgentity.orgentityname
-            this.business.taxpayerid=result.orgentity.taxpayerid
-            this.business.businesscategory=result.orgentity.businesscategory
-            this.business.description=result.orgentity.description
-            this.business.adminfirstname=result.orgentity.adminfirstname
-            this.business.adminmiddlename=result.orgentity.adminmiddlename
-            this.business.adminlastname=result.orgentity.adminlastname
-            this.business.orgentitytype=result.orgentity.orgentitytype
+            var setccurr=result.users.setccurr
+            this.allcurrencies.forEach((item)=>{
+                if(item.setccurr==setccurr){
+                    this.business.setccurr=item.setccurr
+                }
+            })
+            this.business.department=result.busprof.departmentnum
+            this.business.employeetype=result.busprof.employeetype
+            this.business.employer=result.busprof.org_id
+            this.business.manager=result.busprof.manager
+            this.business.employeeid=result.busprof.employeeid
+            this.business.field1=result.users.field1
+            this.business.field2=result.users.field2
+            this.business.field3=result.users.field3
+            this.business.dn=result.users.dn
+            this.business.registertype=result.users.registertype
+            this.business.profiletype=result.users.profiletype
+            this.business.language_id=result.users.language_id
 
             this.contact.address_id=result.address.address_id
             this.contact.addrbook_id=result.addrbook.addrbook_id
@@ -484,12 +459,13 @@ export default {
             this.contact.description=result.addrbook.description
             this.contact.addresstype=result.address.addresstype
             this.contact.status=result.address.status
+            this.contact.nickname=result.users.dn
             this.contact.orgname=result.address.orgname
             this.contact.isprimary=result.address.isprimary==null ? 1 : result.address.isprimary
-            this.contact.lastname=result.address.lastname
+            this.contact.lastname=result.users.field3
             this.contact.persontitle=result.address.persontitle
-            this.contact.firstname=result.address.firstname
-            this.contact.middlename=result.address.middlename
+            this.contact.firstname=result.users.field1
+            this.contact.middlename=result.users.field2
             this.contact.businesstitle=result.address.businesstitle
             this.contact.phone1=result.address.phone1
             this.contact.phone2=result.address.phone2
@@ -501,7 +477,7 @@ export default {
             this.contact.email1=result.address.email1
             this.contact.email2=result.address.email2
 
-            this.preferences.displayname=result.orgentity.orgentityname
+            this.preferences.displayname=result.users.field1+' '+result.users.field2+' '+result.users.field3
             this.preferences.photo=result.userprof.photo
             this.profileimg=result.userprof.photo
             this.preferences.description=result.userprof.description
@@ -512,68 +488,31 @@ export default {
             this.preferences.registertype=result.users.registertype
             this.preferences.dn=result.users.dn
             this.preferences.profiletype=result.users.profiletype
+            this.preferences.field1=result.users.field1
+            this.preferences.field2=result.users.field2
+            this.preferences.field3=result.users.field3
+
+            return requester.ajax_request("/api/v1.0/list_organizations","GET",this.ac_token,this.rf_token,false,null)
+        })
+        var countrydata=listorgs.then(result=>{
+            result.forEach((item)=>{
+                this.organizations.push({value:item.orgentity_id,text:item.orgentityname})
+            })
             return requester.ajax_request_no_tokens("/api/v1.0/list_countries","GET",false,null)
         })
-        var langselect=countryselect.then(result => {
+        var langdata=countrydata.then(result=>{
             result.forEach((item)=>{
                 this.countryselect.push({value:item.countryabbr,text:item.name})
             })
             return requester.ajax_request_no_tokens("/api/v1.0/list_languages","GET",false,null)
         })
-        var currencyselect=langselect.then(result => {
+        langdata.then(result=>{
             result.forEach((item)=>{
                 this.languageselect.push({value:item.language_id,text:item.description})
             })
-            return requester.ajax_request("/api/v1.0/list_currencies","POST",this.ac_token,this.rf_token,true,{language_id:1})
-        })
-        currencyselect.then(result => {
-            // console.log(result)
-            this.currselect=result
-        }).fail((jqXHR,textStatus,errorThrown) => {
-            console.log(jqXHR.responseJSON)
-            console.log(textStatus)
-            console.log(errorThrown)
         })
     },
     methods:{
-        submitsecureinfo(){
-            const payload={...this.secure}
-            console.log(payload)
-        },
-        submitpreferenceinfo(){
-            const payload={...this.preferences}
-            requester.ajax_request("/api/v1.0/update_preferences","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                this.success_message=result.msg
-                this.showSnackbar=true
-            }).fail((jqXHR,textStatus,errorThrown) => {
-                console.log(jqXHR.responseJSON)
-                console.log(textStatus)
-                console.log(errorThrown)
-            })
-        },
-        submitcontactinfo(){
-            const payload={...this.contact}
-            requester.ajax_request("/api/v1.0/update_address","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
-                this.success_message=result.msg
-                this.showSnackbar=true
-            }).fail((jqXHR,textStatus,errorThrown) => {
-                console.log(jqXHR.responseJSON)
-                console.log(textStatus)
-                console.log(errorThrown)
-            })
-        },
-        submitbusinessinfo(){
-            const payload={...this.business}
-            requester.ajax_request("/api/v1.0/update_orgentity","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                this.success_message=result.msg
-                this.showSnackbar=true
-                this.tabIndex+1
-            }).fail((jqXHR,textStatus,errorThrown) => {
-                console.log(jqXHR.responseJSON)
-                console.log(textStatus)
-                console.log(errorThrown)
-            })
-        },
         previewprofilephoto(){
             let formdata = new FormData()
             let input = this.$refs.profilephoto.files[0]
@@ -591,12 +530,18 @@ export default {
                 console.log(errorThrown)
             })
         },
-        changedcurrency(e){
-            let val=e.target.value;
-            this.currselect.forEach((item)=>{
-                if(item.description==val){
-                    this.preferences.setccurr=item.setccurr
-                }
+        submitpreferenceinfo(){
+            const payload={...this.preferences}
+            console.log(payload)
+            requester.ajax_request("/api/v1.0/update_user_preferences","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                this.success_message=result.msg
+                this.showSnackbar=true
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
             })
         },
         changedcountry(e){
@@ -609,10 +554,29 @@ export default {
                     this.stateselect.push({text:item.name,value:item.stateprovabbr})
                 })
             })
+        },
+        submitcontactinfo(){
+            const payload={...this.contact}
+            // console.log(payload)
+            requester.ajax_request("/api/v1.0/update_users_address","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                this.success_message=result.msg
+                this.showSnackbar=true
+            }).fail((jqXHR, textStatus, errorThrown)=>{
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+            })
+        },
+        submitbusinessinfo(){
+            const payload={...this.business}
+            console.log(payload)
+            requester.ajax_request("/api/v1.0/update_users","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                this.success_message=result.msg
+                this.showSnackbar=true
+            }).fail((jqXHR, textStatus, errorThrown)=>{
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+            })
         }
     }
 }
 </script>
-
-<style lang="scss" scoped>
-</style>

@@ -5,9 +5,9 @@
                 <div class="d-flex  align-items-center justify-content-between">
                     <h1 class="breadcrumb">Procurement &amp; Sales Trading Agreements</h1>
                     <div>
-                        <b-dropdown variant="primary" size="sm" right text="Create">
+                        <b-dropdown variant="success" size="sm" right text="Create">
                             <b-dropdown-item v-b-modal.new-default-contract>Default Contract</b-dropdown-item>
-                            <b-dropdown-item v-b-modal.new-contract-modal>Procurement Contract</b-dropdown-item>
+                            <!-- <b-dropdown-item v-b-modal.new-contract-modal>Procurement Contract</b-dropdown-item> -->
                             <b-dropdown-item v-b-modal.new-account-modal>Customer Purchases Account</b-dropdown-item>
                         </b-dropdown>
                     </div>
@@ -63,7 +63,8 @@
                                         <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
                                     </template>
                                     <template v-slot:cell(view)="row">
-                                        <b-button @click="contractdetails(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
+                                        <b-button v-if="row.item.type=='Contract'" @click="contractdetails(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
+                                        <b-button v-else-if="row.item.type=='Account'" @click="accountdetails(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
                                     </template>
                                     <template v-slot:cell(_)>
                                         <div class="d-flex justify-content-between">
@@ -156,7 +157,7 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -229,13 +230,13 @@
                                     <b-col sm="12" md="12">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Comment</label>
-                                            <b-form-textarea :rows="1" :max-rows="6" v-model="account.comments" placeholder="Comment / Brief Description"></b-form-textarea>
+                                            <b-form-textarea :rows="1" :max-rows="6" v-model="account.comment" placeholder="Comment / Brief Description"></b-form-textarea>
                                         </div>
                                     </b-col>
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -308,7 +309,7 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -374,9 +375,9 @@ export default {
             currencyoptions:[{value:null,text:"Select Currency"}],
             account:{
                 trdtype_id:0,state:0,starttime:null,endtime:null,startsnow:"No",neverends:"No",
-                timecreated:null,
+                timecreated:null,origin:0,cstate:0,usage:1,timedeployed:null,
                 name:null,member_id:requester.getfromlocalstorage("employer"),store_id:null,acstate:0,
-                currency:null,comments:"This is a bilateral arrangement negotiated between the seller and the business customer allowing the business customer to purchase products from the seller at a specified price for a specified time under specific conditions.",
+                currency:null,comment:"This is a bilateral arrangement negotiated between the seller and the business customer allowing the business customer to purchase products from the seller at a specified price for a specified time under specific conditions.",
                 actimecreated:null,actimeupdated:null,actimeapproved:null,participant_id:null,
                 language_id:requester.getfromlocalstorage("language_id"),
             },
@@ -384,7 +385,15 @@ export default {
         }
     },
     created(){
-        var orgdata=requester.ajax_request("/api/v1.0/list_organizations","GET",this.ac_token,this.rf_token,false,null)
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var orgdata=verification.then(result=>{
+            return requester.ajax_request("/api/v1.0/list_organizations","GET",this.ac_token,this.rf_token,false,null)
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            // this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var contractlist=orgdata.then(result => {
             result.forEach((item)=>{
                 this.orglist.push({value:item.orgentity_id,text:item.orgentityname})
@@ -392,6 +401,7 @@ export default {
             return requester.ajax_request("/api/v1.0/read_all_trading","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
         })
         var contractdefaults=contractlist.then(result => {
+            console.log(result)
             this.contractlistitems=result
             this.totalRows=result.length
             this.contractlistfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
@@ -423,12 +433,16 @@ export default {
             return requester.ajax_request("/api/v1.0/read_default_contracts","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
         })
         defaultcontractdata.then(result => {
-            console.log(result)
             this.defaultcontractitems=result
             this.defaultcontractfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
         })
     },
     methods:{
+        accountdetails(row){
+            let idx=row.index
+            let trading_id=this.contractlistitems[idx].trading_id
+            this.$router.push( {path:`/scaffolding/account/${trading_id}`} )
+        },
         defcontractdetails(row){
             let idx=row.index
             let trading_id=this.defaultcontractitems[idx].trading_id
@@ -449,6 +463,10 @@ export default {
         },
         setaccountprofile(){
             const payload={...this.account}
+            console.log(payload)
+            this.contractlistitems=[]
+            this.contractlistfields=[]
+            this.totalRows=0
             requester.ajax_request("/api/v1.0/create_accounts","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 this.contractlistitems=result.contracts
                 this.totalRows=result.contracts.length
@@ -470,11 +488,12 @@ export default {
             const payload={...this.defaultcontract}
             // console.log(payload)
             requester.ajax_request("/api/v1.0/create_default_contract","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                console.log(result)
+                // console.log(result)
                 this.defaultcontractitems=result.defaultcontracts
                 this.defaultcontractfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
                 this.success_message=result.msg
                 this.showSnackbar=true
+                this.$refs['new-default-contract'].hide()
             }).fail((jqXHR,textStatus,errorThrown) => {
                 console.log(jqXHR.responseJSON)
                 console.log(textStatus)

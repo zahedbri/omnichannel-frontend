@@ -5,7 +5,7 @@
                 <div class="d-flex  align-items-center justify-content-between">
                     <h1 class="breadcrumb">Chart of Accounts</h1>
                     <div>
-                        <b-dropdown variant="primary" size="sm" right text="New Account">
+                        <b-dropdown variant="success" size="sm" right text="New Account">
                             <b-dropdown-item v-b-modal.new-account-modal>Add new account</b-dropdown-item>
                             <b-dropdown-item v-b-modal.new-vendor-modal>Import accounts</b-dropdown-item>
                         </b-dropdown>
@@ -16,23 +16,38 @@
         <section>
             <b-container fluid>
                 <b-row>
-                    <b-col sm="4" md="4" class="my-1">
-                        <b-form-group label="Filter" label-cols-sm="2" label-align-sm="right" label-size="sm" label-for="filterInput" class="mb-0">
-                            <b-input-group size="sm">
-                                <b-form-input v-model="filter" type="search" id="filterInput" placeholder="Type to search"></b-form-input>
-                                <b-input-group-append>
-                                    <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
-                                </b-input-group-append>
-                            </b-input-group>
-                        </b-form-group>
-                    </b-col>
-                    <b-col sm="8" md="8" class="my-1 d-flex justify-content-end">
-                        <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" size="sm" class="my-0"></b-pagination>
+                    <b-col cols="12" class="mt-2">
+                        <b-card no-body class="mb-0">
+                            <b-card-header style="background:#fff;" class="py-2">
+                                <b-row class="d-flex align-items-center justify-content-end">
+                                    <b-col sm="7" md="7" class="my-1">
+                                        <div class="input-group">
+                                            <b-form-input type="text" placeholder="Search..." size="sm" v-model="filter" class="form-control"></b-form-input>
+                                            <div class="input-group-append">
+                                                <b-button size="sm" type="button" :disabled="!filter" @click="filter = ''" class="btn btn-outline-secondary"><i class="fas fa-times-circle"></i></b-button>
+                                            </div>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="5" md="5" class="my-1 d-flex justify-content-end">
+                                        <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" size="sm" class="my-0"></b-pagination>
+                                    </b-col>
+                                </b-row>
+                            </b-card-header>
+                        </b-card>
                     </b-col>
                     <b-col cols="12">
                         <b-card no-body>
                             <b-card-body>
-                                <b-table bordered show-empty striped hover :current-page="currentPage" :per-page="perPage" :items="accountsitems" :fields="accountsfields" :filter="filter" @filtered="onFiltered"></b-table>
+                                <b-table bordered show-empty striped hover :current-page="currentPage" :per-page="perPage" :items="accountsitems" :fields="accountsfields" :filter="filter" @filtered="onFiltered">
+                                    <template v-slot:head(_)>
+                                        <b-button disabled class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
+                                        <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
+                                    </template>
+                                    <template v-slot:cell(_)="row">
+                                        <b-button @click="seeaccount(row)" class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
+                                        <b-button @click="editaccount(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
+                                    </template>
+                                </b-table>
                             </b-card-body>
                         </b-card>
                     </b-col>
@@ -97,7 +112,7 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -119,15 +134,9 @@ export default {
         return {
             ac_token:requester.getfromlocalstorage("access_token"),
             rf_token:requester.getfromlocalstorage("refresh_token"),
-            success_message:null,
-            showSnackbar:false,
-            duration:4000,
-            position:"center",
+            success_message:null,showSnackbar:false,duration:4000,position:"center",
 
-            currentPage:1,
-            totalRows:null,
-            perPage:10,
-            filter:null,
+            currentPage:1,totalRows:null,perPage:6,filter:null,
 
             user_id:requester.getfromlocalstorage("user_id"),
             employer:requester.getfromlocalstorage("employer"),
@@ -138,8 +147,7 @@ export default {
             language_id:requester.getfromlocalstorage("language_id"),
             profile:requester.getfromlocalstorage("profile"),
 
-            accountsitems:null,
-            accountsfields:null,
+            accountsitems:null,accountsfields:null,
             acclassoptions:[{value:null,text:"Select Class"}],
             currencyoptions:[{value:null,text:"Select Currency"}],
             faccount:{
@@ -151,10 +159,18 @@ export default {
         }
     },
     created(){
-        var listaccounts=requester.ajax_request("/api/v1.0/list_accounts","POST",this.ac_token,this.rf_token,true,{member_id:this.user_id,language_id:this.language_id})
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var listaccounts=verification.then(result=>{
+            return requester.ajax_request("/api/v1.0/list_accounts","POST",this.ac_token,this.rf_token,true,{member_id:this.user_id,language_id:this.language_id})
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var listclasses=listaccounts.then(result => {
             this.accountsitems=result
-            this.accountsfields=['account_number','identifier','account_class','currency','balance','description']
+            this.accountsfields=['account_number','identifier','account_class','currency','balance','description','_']
             this.totalRows=this.accountsitems.length
             return requester.ajax_request("/api/v1.0/list_acclasses","POST",this.ac_token,this.rf_token,true,{member_id:this.user_id,language_id:this.language_id})
         })
@@ -171,6 +187,12 @@ export default {
         })
     },
     methods:{
+        seeaccount(row){
+            let idx=row.index
+            let faccount_id=this.accountsitems[idx].faccount_id
+            this.$router.push( {path:`/scaffolding/accountdetails/${faccount_id}`} )
+        },
+        editaccount(row){},
         onFiltered(filteredItems){
             this.totalRows=filteredItems.length
             this.currentPage=1

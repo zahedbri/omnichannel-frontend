@@ -52,9 +52,6 @@
                                                             <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
                                                         </div>
                                                     </template>
-                                                    <template v-slot:cell(closed)="row">
-                                                        <span v-if="row.item.open=='Yes'">No</span>
-                                                    </template>
                                                     <template v-slot:cell(_)=row>
                                                         <div class="d-flex align-items-center justify-content-center">
                                                             <b-button @click="podetails(row)" class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="fas fa-eye"></i></b-button>
@@ -187,7 +184,15 @@ export default {
         }
     },
     created(){
-        var vendordata=requester.ajax_request("/api/v1.0/list_vendors","GET",this.ac_token,this.rf_token,false,null)
+        var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
+        var vendordata=verification.then(result=>{
+            return requester.ajax_request("/api/v1.0/list_vendors","GET",this.ac_token,this.rf_token,false,null)
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            this.$router.push({path:'/login'})
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
         var storesdata=vendordata.then(result=>{
             result.vendors.forEach((item)=>{
                 this.vendoroptions.push({value:item.vendor_id,text:item.vendorname})
