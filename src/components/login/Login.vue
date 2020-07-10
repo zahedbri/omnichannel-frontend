@@ -34,26 +34,18 @@
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text"><i class="fas fa-user-shield"></i></span>
                                             </div>
-                                            <b-form-input class="form-control" :formatter="formatPhone" v-model="loginform.logonid" placeholder="Phone" type="text"></b-form-input>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="input-group input-group-alternative">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text"><i class="fas fa-lock-open"></i></span>
-                                            </div>
-                                            <input class="form-control" v-model="loginform.logonpassword" placeholder="Password" type="password">
+                                            <b-form-input class="form-control" :formatter="formatPhone" v-model="loginform.phone" placeholder="Phone" type="text"></b-form-input>
                                         </div>
                                     </div>
                                     <div class="text-center">
-                                        <button type="submit" class="btn btn-success my-4">Sign in</button>
+                                        <button :disabled="enablesignup" type="submit" class="btn btn-success my-4">Sign in</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                         <div class="row mt-3">
                             <div class="col-6">
-                                <a href="#" class="text-light"><small>Forgot password?</small></a>
+                                <router-link to="/login" class="text-light"><small>Forgot password?</small></router-link>
                             </div>
                             <div class="col-6 text-right">
                                 <router-link to="/signup" class="text-light"><small>Create new account</small></router-link>
@@ -62,7 +54,7 @@
                     </div>
                 </div>
             </div>
-            <footer class="py-5">
+            <footer class="py-5 mt-4 pb-4">
             </footer>
         </div>
         <md-snackbar :md-position="position" :md-duration="duration" :md-active.sync="showSnackbar" md-persistent>
@@ -79,18 +71,37 @@ export default {
     name:"login",
     data(){
         return {
+            ac_token:requester.getfromlocalstorage("access_token"),
+            rf_token:requester.getfromlocalstorage("refresh_token"),
             success_message:null,
             showSnackbar:false,
             duration:4000,
             position:"center",
+            unclearedphone:true,
             loginform:{
-                logonid:null,
-                logonpassword:null,
+                phone:null,
             }
         }
     },
     created(){
-        requester.clearlocalstorage()
+        if(this.ac_token != null && this.rf_token !=null){
+            requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null).done(result=>{
+                console.log(result.status)
+                setTimeout(()=>{this.$router.push('/scaffolding/dashboard')},3000)
+            }).fail((jqXHR, textStatus, errorThrown)=>{
+                console.log(errorThrown)
+                console.log(jqXHR.responseJSON)
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+                setTimeout(()=>{this.$router.push('/login')},3000)
+            })
+        }else { setTimeout(()=>{this.$router.push('/login')},3000) }
+    },
+    computed:{
+        enablesignup:function(){
+            if(this.unclearedphone==false){return false}
+            else{return true;}
+        }
     },
     methods: {
         formatPhone(value){
@@ -101,27 +112,18 @@ export default {
             if(phoneclearance){this.unclearedphone=false}
             else if(phoneclearance==false){this.unclearedphone=true}
             return phoneUtil.format(number,PNF.INTERNATIONAL)
-        },        
+        },
         organizationlogin(){
             const payload={...this.loginform}
             requester.clearlocalstorage()
-            requester.ajax_request_no_tokens("/api/v1.0/login_organization","POST",true,payload).done(result => {
-                requester.savetolocalstorage("access_token", result.access_token)
-                requester.savetolocalstorage("refresh_token", result.refresh_token)
+            requester.ajax_request_no_tokens("/api/v1.0/otp_login","POST",true,payload).done(result => {
+                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
-                // console.log(result)
-                requester.savetolocalstorage("user_id",result.user_id)
-                requester.savetolocalstorage("employer",result.employer.employer)
-                requester.savetolocalstorage("employername",result.employer.employername)
-                requester.savetolocalstorage("roledisplayname",result.roles[0].roledisplayname)
-                requester.savetolocalstorage("role_id",result.roles[0].role_id)
-                requester.savetolocalstorage("rolename",result.roles[0].rolename)
-                requester.savetolocalstorage("language_id",result.language_id)
-                requester.savetolocalstorage("profile",result.profile)
-                result.user_id==result.employer.employer ? this.$router.push({path:`/scaffolding/editcompanyprofile/${result.user_id}`}) : this.$router.push({path:`/scaffolding/userprofile/${result.user_id}`})
+                setTimeout(()=>{this.$router.push({path:'/token'})},3000)
             }).fail((jqXHR, textStatus, errorThrown)=>{
                 console.log(errorThrown)
+                console.log(jqXHR.responseJSON.msg)
                 this.success_message=jqXHR.responseJSON.msg
                 this.showSnackbar=true
             })

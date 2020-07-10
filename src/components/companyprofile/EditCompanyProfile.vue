@@ -125,7 +125,7 @@
                                                     </b-row>
                                                 </b-card-body>
                                                 <b-card-footer class="text-right" style="margin:0rem -1.25rem -1.25rem -1.25rem;">
-                                                    <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                                    <button class="btn btn-success" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
                                                 </b-card-footer>
                                             </form>
                                         </b-col>
@@ -258,7 +258,7 @@
                                                     </b-row>
                                                 </b-card-body>
                                                 <b-card-footer class="text-right" style="margin:0rem -1.25rem -1.25rem -1.25rem;">
-                                                    <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                                    <button class="btn btn-success" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
                                                 </b-card-footer>
                                             </form>
                                         </b-col>
@@ -342,7 +342,7 @@
                                                     </b-row>
                                                 </b-card-body>
                                                 <b-card-footer class="text-right" style="margin:0rem -1.25rem -1.25rem -1.25rem;">
-                                                    <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                                    <button class="btn btn-success" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
                                                 </b-card-footer>
                                             </form>
                                         </b-col>

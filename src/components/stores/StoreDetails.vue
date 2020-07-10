@@ -56,8 +56,37 @@
                         </b-card>
                     </b-col>
                     <b-col cols="8">
-                        <b-card no-body class="mb-1">
-                        </b-card>
+                        <form @submit.prevent="submitproductfile" class="card shadow-none mb-0">
+                            <b-card-body>
+                                <h3 class="card-title">Batch Import Store Items</h3>
+                                <b-row>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Language Preference</label>
+                                            <b-form-select size="sm" @change="changedorg" v-model="upload.orgentity_id" :options="orglist"></b-form-select>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label mr-2">Select File</label>
+                                            <div class="custom-file b-form-file b-custom-control-sm">
+                                                <input type="file" id="profilephoto" ref="profilephoto" @change="previewprofilephoto" multiple="multiple" class="custom-file-input">
+                                                <label for="profilephoto" data-browse="Browse" class="custom-file-label">{{profilephotolabelvalue}}</label>
+                                            </div>
+                                        </div>
+                                    </b-col>                                    
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">File URL</label>
+                                            <b-form-input type="text" readonly size="sm" v-model="upload.photo" placeholder="File URL"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                </b-row>
+                            </b-card-body>
+                            <b-card-footer class="text-right" style="margin:0rem -1.25rem -1.25rem -1.25rem;">
+                                <button class="btn btn-success" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                            </b-card-footer>
+                        </form>
                     </b-col>
                 </b-row>
             </b-container>
@@ -194,6 +223,9 @@ export default {
         return {
             defaultavatar:requester.baseurl+'/static/profileuploads/product-default-2.png',
             settings: {maxScrollbarLength: 100},
+            profilephotolabelvalue:"No file chosen",
+            upload:{photo:null,orgname:null,orgentity_id:null},
+            orglist:[{value:null,text:"Select Organization"}],
 
             ac_token:requester.getfromlocalstorage("access_token"),rf_token:requester.getfromlocalstorage("refresh_token"),
             success_message:null,showSnackbar:false,duration:4000,position:"center",store_id:this.$route.params.store_id,
@@ -220,6 +252,9 @@ export default {
                 enddate:null,
                 jurstgroup_id:null,
                 calcode_id:null
+            },
+            shipping:{
+                calusage_id:2,
             },
             calcode:{
                 code:null,
@@ -307,14 +342,54 @@ export default {
             })
             return requester.ajax_request("/api/v1.0/read_calcode","POST",this.ac_token,this.rf_token,true,{storeent_id:this.store_id,language_id:this.language_id,usages:[2]})
         })
-        var shippingdata=calcodedata.then(result => {
+        var orgdata=calcodedata.then(result => {
             result.forEach((item)=>{
                 this.calcodeoptions.push({value:item.calcode_id,text:item.description})
             })
-            return requester.ajax_request("/api/v1.0/read_shipping_policy","POST",this.ac_token,this.rf_token,true,{})
+            return requester.ajax_request("/api/v1.0/list_organizations","GET",this.ac_token,this.rf_token,false,null)
+            // return requester.ajax_request("/api/v1.0/read_shipping_policy","POST",this.ac_token,this.rf_token,true,{})
+        })
+        orgdata.then(result=>{
+            console.log(result)
+            result.forEach((item)=>{
+                this.orglist.push({text:item.orgentityname,value:item.orgentity_id})
+            })
         })
     },
     methods:{
+        submitproductfile(){
+            const payload={...this.upload}
+            requester.ajax_request("/api/v1.0/upload_products","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                console.log("done")
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },
+        changedorg(e){
+            this.orglist.forEach((item)=>{
+                if(item.value==e){
+                    this.upload.orgname=item.text
+                }
+            })
+        },
+        previewprofilephoto(){
+            let formdata = new FormData()
+            let input = this.$refs.profilephoto.files[0]
+            formdata.append("image",input)
+            this.profilephotolabelvalue=input.name
+            JQuery.ajax({url:requester.baseurl+"/producttemplate",type:"POST",data:formdata,
+			cache:false,processData:false,contentType:false,}).done(result => {
+                this.success_message = "Successfully uploaded "+result.name+" to storage."
+                this.showSnackbar = true
+                this.upload.photo=result.url
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },
         gotopath(pth){
             this.$router.push( {path:pth} )
         },

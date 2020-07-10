@@ -369,9 +369,30 @@
                                             </b-card-body>
                                         </b-card>
                                     </b-tab>
-
-
-
+                                    <b-tab title="CreditLine" no-body>
+                                        <b-card no-body class="shadow-none">
+                                            <b-card-header class="py-1 d-flex justify-content-between align-items-center" style="background:#fff !important;">
+                                                <b-container fluid class="px-0">
+                                                    <b-row>
+                                                        <b-col sm="5">
+                                                            <span class="text-dark text-xsmall">Provide <i>(an ammortized)</i> line of credit to the buyer organization.</span>
+                                                        </b-col>
+                                                        <b-col sm="7">
+                                                            <b-row class="d-flex justify-content-end align-items-center">
+                                                                <b-col sm="3" class="pl-0 pr-1">
+                                                                    <b-button v-b-modal.creditline-modal size="sm" variant="success" type="button"><i class="fas fa-plus-circle mr-1"></i>Create</b-button>
+                                                                </b-col>
+                                                            </b-row>
+                                                        </b-col>
+                                                    </b-row>
+                                                </b-container>
+                                            </b-card-header>
+                                            <b-card-body>
+                                                <b-table show-empty bordered striped hover :current-page="currentPage5" :per-page="perPage5" :items="credititems" :fields="creditfields">
+                                                </b-table>
+                                            </b-card-body>
+                                        </b-card>
+                                    </b-tab>
                                 </b-tabs>
                             </b-card>
                         </div>
@@ -379,6 +400,65 @@
                 </b-row>
             </b-container>
         </section>
+        <b-modal ref="creditline-modal" size="md" id="creditline-modal" title="Line of Credit" hide-footer>
+            <b-container class="px-0">
+                <b-row>
+                    <b-col cols="12" class="px-0">
+                        <form class="card shadow-none mb-0" @submit.prevent="submitcreditline">
+                            <b-card-body class="py-0">
+                                <b-row>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Issuing Currency</label>
+                                            <b-form-select size="sm" v-model="creditline.setccurr" :options="currencyoptions" required></b-form-select>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Issue Date</label>
+                                            <b-form-datepicker size="sm" type="text" required v-model="creditline.timecreated" placeholder="Issue Date"></b-form-datepicker>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Total Payoff Period</label>
+                                            <b-form-input size="sm" type="number" step="1" required v-model="creditline.n" placeholder="in months"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Interest Rate</label>
+                                            <b-form-input size="sm" type="number" step="0.1" required v-model="creditline.rate" placeholder="e.g., 7.5%"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Credit Limit</label>
+                                            <b-form-input size="sm" type="number" step="0.10" required v-model="creditline.creditlimit" placeholder="Credit Limit"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Loan Amount</label>
+                                            <b-form-input size="sm" @input="ammortizedstandard" type="number" step="0.10" required v-model="creditline.decimalfield1" :max="creditline.creditlimit" placeholder="Loan Amount"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Monthly Repayment</label>
+                                            <b-form-input size="sm" type="number" step="0.01" required v-model="creditline.decimalfield2" placeholder="Monthly Repayment"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                </b-row>
+                            </b-card-body>
+                            <b-card-footer class="text-right">
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
+                            </b-card-footer>
+                        </form>
+                    </b-col>
+                </b-row>
+            </b-container>
+        </b-modal>
         <md-snackbar :md-position="position" :md-duration="duration" :md-active.sync="showSnackbar" md-persistent>
             <span>{{success_message}}</span>
             <md-button class="md-primary" @click="showSnackbar = false">OK</md-button>
@@ -450,6 +530,12 @@ export default {
             catlist:[],customprice:null,catentries:null,categories:[{value:null,text:"Select Category"}],
             categories_unprocessed:[],category_id:null,calcodes:[{value:null,text:"Select Discount"}],calcode_id:null,
             catgroupitems:[],catgroupfields:[],invitem:null,invitems:[],invfields:[],invcalcode_id:null,invitem_id:null,
+
+            contractoptions:[],currencyoptions:[{value:null,text:"Select Currency"}],
+            creditline:{account_id:this.$route.params.trading_id,setccurr:'NGN',state:0,timecreated:null,timeupdated:null,
+            creditlimit:1000000,decimalfield1:null,decimalfield2:null,n:null,rate:null,name:null},
+            creditfields:['account','created','currency','limit','duration','loan_amount','repayment_amount','next_due','rate'],
+            crediitems:[],
         }
     },
     created(){
@@ -457,7 +543,7 @@ export default {
         var trade=verification.then(result=>{
             return requester.ajax_request("/api/v1.0/read_account","POST",this.ac_token,this.rf_token,true,{language_id:requester.getfromlocalstorage("language_id"),trading_id:this.$route.params.trading_id})
         }).fail((jqXHR,textStatus,errorThrown) => {
-            // this.$router.push({path:'/login'})
+            this.$router.push({path:'/login'})
             console.log(jqXHR.responseJSON)
             console.log(textStatus)
             console.log(errorThrown)
@@ -510,7 +596,7 @@ export default {
             })
             return requester.ajax_request("/api/v1.0/read_calcode","POST",this.ac_token,this.rf_token,true,{storeent_id:this.deployed_store_id,language_id:this.language_id,usages:[1]})
         })
-        calcodesdata.then(result => {
+        var contractlist=calcodesdata.then(result => {
             result.forEach((item)=>{
                 this.calcodes.push({text:item.description,value:item.calcode_id})
             })
@@ -524,9 +610,52 @@ export default {
             })
             this.category_id=maxitem.catgroup_id
             this.selectedcatgroup(maxitem.catgroup_id)
+            return requester.ajax_request("/api/v1.0/select_list_contracts","GET",this.ac_token,this.rf_token,false,null)
+        })
+        var currencydata=contractlist.then(result=>{
+            result.unshift({value:null,text:"Select Account"})
+            this.contractoptions=result
+            result.forEach((item)=>{
+                if(item.value==this.trading_id){ this.creditline.name=item.text }
+            })
+            return requester.ajax_request("/api/v1.0/list_currencies","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
+        })
+        var creditlinedata=currencydata.then(result=>{
+            result.forEach((item)=>{
+                this.currencyoptions.push({value:item.setccurr,text:item.description})
+            })
+            return requester.ajax_request("/api/v1.0/read_creditline","POST",this.ac_token,this.rf_token,true,{account_id:this.trading_id,language_id:this.language_id})
+        })
+        creditlinedata.then(result=>{
+            console.log(result);
+            this.credititems=result;
+            this.totalRows5=result.length;
         })
     },
     methods:{
+        ammortizedstandard(val){
+            var A;var P=val;var r=this.creditline.rate;var n=this.creditline.n
+            r=(r/100)/12
+            var num=r*(1+r)**n
+            var denum=((1+r)**n)-1
+            A=P*(num/denum)
+            this.creditline.decimalfield2=requester.roundtodp(A,2)
+        },
+        submitcreditline(){
+            const payload={...this.creditline}
+            requester.ajax_request("/api/v1.0/create_creditline","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                console.log(result)
+                this.success_message=result.msg
+                this.showSnackbar=true
+                this.$refs['creditline-modal'].hide()
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },
         removeitemdiscount(row){
             let index=row.index
             const copyitems=JSON.parse(JSON.stringify(this.invitems))

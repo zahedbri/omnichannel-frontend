@@ -25,10 +25,10 @@
                                         <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
                                     </template>
                                     <template v-slot:cell(view)="row">
-                                        <b-button @click="defcontractdetails(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
+                                        <b-button v-if="row.item.trading_id!=null" @click="defcontractdetails(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
                                     </template>
                                     <template v-slot:cell(contract_title)="row">
-                                        <div class="content d-flex align-items-center justify-content-left">
+                                        <div v-if="row.item.trading_id!=null" class="content d-flex align-items-center justify-content-left">
                                             <a href="#" style="margin-right:10px!important; width:45px!important; height:45px !important;">
                                                 <img class="img-fluid rounded" :src="defaultavatar">
                                             </a>
@@ -74,7 +74,7 @@
                                         </div>
                                     </template>
                                     <template v-slot:cell(contract_title)="row">
-                                        <div class="content d-flex align-items-center justify-content-left">
+                                        <div v-if="Object.keys(row.item).length" class="content d-flex align-items-center justify-content-left">
                                             <a href="#" style="margin-right:10px!important; width:45px!important; height:45px !important;">
                                                 <img class="img-fluid rounded" :src="defaultavatar">
                                             </a>
@@ -163,7 +163,7 @@
                     </b-col>
                 </b-row>
             </b-container>
-        </b-modal>        
+        </b-modal>
         <b-modal ref="new-account-modal" size="lg" id="new-account-modal" title="Customer Purchases Account" hide-footer>
             <b-container class="px-0">
                 <b-row>
@@ -369,7 +369,7 @@ export default {
                 timecreated:null,name:null,member_id:requester.getfromlocalstorage("employer"),
                 origin:0,cstate:0,usage:null,timedeployed:null,store_id:null,
                 participant_id:null,language_id:requester.getfromlocalstorage("language_id"),
-                comment:"This is a bilateral arrangement negotiated between the buyer and the vendor (or seller) allowing the buyer to purchase products from the seller at a specified price for a specified time under specific conditions.",
+                comment:"This is a bilateral arrangement negotiated between the buyer and the vendor (or seller) allowing the buyer to purchase products from the seller at a specified price for a specified time under specific conditions. May also include the provision of credit facilities to the buyer from the supplier.",
             },
             storesoptions:[{value:null,text:"Select Supplying Store"}],
             currencyoptions:[{value:null,text:"Select Currency"}],
@@ -377,7 +377,7 @@ export default {
                 trdtype_id:0,state:0,starttime:null,endtime:null,startsnow:"No",neverends:"No",
                 timecreated:null,origin:0,cstate:0,usage:1,timedeployed:null,
                 name:null,member_id:requester.getfromlocalstorage("employer"),store_id:null,acstate:0,
-                currency:null,comment:"This is a bilateral arrangement negotiated between the seller and the business customer allowing the business customer to purchase products from the seller at a specified price for a specified time under specific conditions.",
+                currency:"NGN",comment:"This is a bilateral arrangement negotiated between the seller and the business customer allowing the business customer to purchase products from the seller at a specified price for a specified time under specific conditions. May also include the provision of credit facilities to the buyer from the seller.",
                 actimecreated:null,actimeupdated:null,actimeapproved:null,participant_id:null,
                 language_id:requester.getfromlocalstorage("language_id"),
             },
@@ -401,7 +401,7 @@ export default {
             return requester.ajax_request("/api/v1.0/read_all_trading","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
         })
         var contractdefaults=contractlist.then(result => {
-            console.log(result)
+            // console.log(result)
             this.contractlistitems=result
             this.totalRows=result.length
             this.contractlistfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
@@ -430,7 +430,7 @@ export default {
             result.forEach((item)=>{
                 this.customerorganizations.push({value:item.users_id,text:item.orgentityname})
             })
-            return requester.ajax_request("/api/v1.0/read_default_contracts","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
+            return requester.ajax_request("/api/v1.0/read_default_contracts","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id})
         })
         defaultcontractdata.then(result => {
             this.defaultcontractitems=result
@@ -464,9 +464,6 @@ export default {
         setaccountprofile(){
             const payload={...this.account}
             console.log(payload)
-            this.contractlistitems=[]
-            this.contractlistfields=[]
-            this.totalRows=0
             requester.ajax_request("/api/v1.0/create_accounts","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 this.contractlistitems=result.contracts
                 this.totalRows=result.contracts.length
@@ -504,7 +501,7 @@ export default {
             const payload={...this.contract}
             // console.log(payload)
             requester.ajax_request("/api/v1.0/create_contract","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                console.log(result)
+                // console.log(result)
                 this.contractlistitems=result.contracts
                 this.totalRows=result.contracts.length
                 this.contractlistfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']

@@ -47,7 +47,7 @@
                                         </div>
                                     </template>
                                     <template v-slot:cell(_)="row">
-                                        <div class="d-flex align-items-center justify-content-center">
+                                        <div v-if="row.item.ra_id" class="d-flex align-items-center justify-content-center">
                                             <b-button @click="removerow(row)" class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="far fa-trash-alt"></i></b-button>
                                             <b-button v-b-modal.receipt-modal @click="receiveitem(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="far fa-clipboard"></i></b-button>
                                         </div>
@@ -105,7 +105,7 @@
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Quantity Received</label>
-                                            <b-form-input size="sm" v-model="receipt.qtyreceived" :max="receipt.qtyremaining" type="number" step="1" placeholder="Quantity Received" required></b-form-input>
+                                            <b-form-input size="sm" @input="receiptcomment" v-model="receipt.qtyreceived" :max="receipt.qtyremaining" type="number" step="1" placeholder="Quantity Received" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="3">
@@ -129,7 +129,7 @@
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Per Unit Cost</label>
-                                            <b-form-input size="sm" v-model="receipt.cost" type="number" step="1" placeholder="Per Unit Cost" required></b-form-input>
+                                            <b-form-input size="sm" readonly v-model="receipt.cost" type="number" step="1" placeholder="Per Unit Cost" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="12" md="12">
@@ -138,7 +138,6 @@
                                             <b-form-textarea :rows="1" :max-rows="6" v-model="receipt.comment1" placeholder="Comment the quantities received on the receipt date."></b-form-textarea>
                                         </div>
                                     </b-col>
-
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
@@ -177,7 +176,7 @@
                                     <b-col sm="4" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Quantity Ordered</label>
-                                            <b-form-input size="sm" v-model="radetail.qtyordered" type="number" step="1" placeholder="Quantity Ordered" required></b-form-input>
+                                            <b-form-input size="sm" @input="changeordered" v-model="radetail.qtyordered" type="number" step="1" placeholder="Quantity Ordered" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="4" md="4">
@@ -282,10 +281,10 @@ export default {
                 ra_id:this.$route.params.ra_id,ffmcenter_id:null,itemspc_id:null,qtyordered:null,
                 qtyreceived:null,qtyremaining:0,qtyallocated:0,expecteddate:null,radetailcomment:null,
                 lastupdate:null,catentry_id:null,catentryname:null,store_id:null,vendor_id:null,
-                cost:null,setccurr:null,currency:null,
+                cost:null,setccurr:null,currency:null,name:null,
             },
             receipt:{
-                versionspc_id:null,radetail_id:null,store_id:null,setccurr:null,ffmcenter_id:null,catentry:null,
+                versionspc_id:null,radetail_id:this.radetailcomment,store_id:null,setccurr:null,ffmcenter_id:null,catentry:null,
                 vendor_id:null,receiptdate:null,qtyreceived:null,qtyinprocess:null,qtyonhand:null,qtyinkits:null,
                 cost:null,comment1:null,lastupdate:null,createtime:null,receipttype:null,rtnrcptdsp_id:null,
                 qtyremaining:null,ra_id:this.$route.params.ra_id
@@ -353,8 +352,19 @@ export default {
         })
     },
     methods:{
+        changeordered(e){
+            this.radetail.radetailcomment="Ordered "+this.radetail.qtyordered+" quantities of "+this.radetail.name+" and received "+this.radetail.qtyreceived
+        },
+        changereceived(e){
+            this.radetail.radetailcomment="Ordered "+this.radetail.qtyordered+" quantities of "+this.radetail.name+" and received "+this.radetail.qtyreceived
+        },
+        receiptcomment(e){
+            var cmnt="Received "+this.receipt.qtyreceived+" quantities of "+this.receipt.catentry+"."
+            this.receipt.comment1=cmnt;this.receipt.radetailcomment=cmnt;
+        },
         getitemprices(e){
-            requester.ajax_request("/api/v1.0/item_price_default_trading","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id,name:e}).done(result=>{
+            var payload={language_id:this.language_id,name:e,member_id:this.employer}
+            requester.ajax_request("/api/v1.0/item_price_default_trading","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
                 this.pricesitems=result
                 this.pricesfields=['contract','name','currency','price']
                 this.totalrows3=result.length
@@ -362,6 +372,7 @@ export default {
         },
         submitreceipt(){
             const payload={...this.receipt}
+            payload.member_id=this.employer
             console.log(payload)
             requester.ajax_request("/api/v1.0/inventory_receipt","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
                 console.log(result)
@@ -372,7 +383,6 @@ export default {
                 this.totalRows=result.detailsitems.length
                 this.detailsfields=['warehouse','item','ordered','received','remaining','allocated','expected_on','updated_on','_']
                 this.$refs['receipt-modal'].hide()
-
             }).fail((jqXHR,textStatus,errorThrown) => {
                 this.success_message=jqXHR.responseJSON.msg
                 this.showSnackbar=true
@@ -453,9 +463,11 @@ export default {
         },
         calculateremaining(e){
             this.radetail.qtyremaining=this.radetail.qtyordered-this.radetail.qtyreceived
+            this.changereceived(e)
         },
         selecteditem(e){
             let productname=e.target.value
+            this.radetail.name=e.target.value
             this.catentries.forEach((item)=>{
                 if(item.name==productname){
                     this.radetail.itemspc_id=item.itemspc_id
@@ -465,7 +477,7 @@ export default {
         },
         submitradetail(){
             const payload={...this.radetail}
-            // console.log(payload)
+            payload.member_id=this.employer
             requester.ajax_request("/api/v1.0/create_radetail","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
                 // console.log(result)
                 this.success_message=result.msg

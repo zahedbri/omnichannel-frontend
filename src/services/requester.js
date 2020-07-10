@@ -67,7 +67,16 @@ export default {
         for(var i=0; i<arr.length; i=i+itemsperpage){
 			newarr.push(arr.slice(i,i+itemsperpage))
 		}
-		console.log(newarr)
+		// console.log(newarr)
 		return newarr
 	},
+    randomize(){
+		return [0, 0, 0].map(v => {
+			return Math.round(300 + Math.random() * 700) / 10
+		})
+	},
+	roundtodp(num,n){
+		return (Math.round(num*100)/100).toFixed(n)
+	},
+
 }

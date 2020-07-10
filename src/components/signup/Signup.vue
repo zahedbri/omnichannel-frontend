@@ -45,7 +45,7 @@
                                             <b-form-input class="form-control" :formatter="formatPhone" v-model="orgsignup.logonid" placeholder="Phone Number" type="text"></b-form-input>
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <!-- <div class="form-group">
                                         <div class="input-group input-group-alternative">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text"><i class="fas fa-lock-open"></i></span>
@@ -53,16 +53,16 @@
                                             <b-form-input class="form-control" type="password" v-model="orgsignup.logonpassword" :state="pw_state" aria-describedby="inputLiveHelp inputLiveFeedback" @keyup.native="constrainpassword" required placeholder="Password"></b-form-input>
                                             <b-form-invalid-feedback id="inputLiveFeedback">{{ pw_msg }}</b-form-invalid-feedback>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <div class="text-center">
-                                        <button :disabled="enablesignup" type="submit" class="btn btn-success my-4">Sign in</button>
+                                        <button type="submit" class="btn btn-success my-4">Sign in</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                         <div class="row mt-3">
                             <div class="col-6">
-                                <a href="#" class="text-light"><small>Forgot password?</small></a>
+                                <router-link to="/login" class="text-light"><small>Forgot password?</small></router-link>
                             </div>
                             <div class="col-6 text-right">
                                 <router-link to="/login" class="text-light"><small>Log in</small></router-link>
@@ -88,6 +88,9 @@ export default {
     name:"signup",
     data(){
         return {
+            ac_token:requester.getfromlocalstorage("access_token"),
+            rf_token:requester.getfromlocalstorage("refresh_token"),
+
             success_message:null,
             showSnackbar:false,
             duration:4000,
@@ -116,17 +119,23 @@ export default {
         }
     },
     created(){
-        requester.clearlocalstorage()
-        var ap_defaults=requester.ajax_request_no_tokens("/api/v1.0/default_password_policy","GET")
-        ap_defaults.then(result => {
-            // console.log(result)
-            this.ap_def=result
-        }).fail((jqXHR,textStatus,errorThrown) => {
-            this.$router.push({path:'/login'})
-            console.log(jqXHR.responseJSON)
-            console.log(textStatus)
-            console.log(errorThrown)
-        })
+        // when you sign out clear all entries to localstorage.
+        // so that when you sign in you enter fresh tokens
+        // if you find yourself on the sign in/sign up pages
+        // you can get routed to dashboard if your tokens are still valid.
+
+        // if(this.ac_token != null && this.rf_token !=null){
+        //     requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null).done(result=>{
+        //         console.log(result)
+        //         setTimeout(()=>{this.$router.push('/scaffolding/dashboard')},3000)
+        //     }).fail((jqXHR, textStatus, errorThrown)=>{
+        //         console.log(errorThrown)
+        //         console.log(jqXHR.responseJSON)
+        //         this.success_message=jqXHR.responseJSON.msg
+        //         this.showSnackbar=true
+        //         setTimeout(()=>{this.$router.push('/signup')},3000)
+        //     })
+        // }
     },
     methods: {
         formatPhone(value){
@@ -140,24 +149,14 @@ export default {
         },
         signuporg(){
             const payload={...this.orgsignup}
-            // console.log(payload)
+            requester.clearlocalstorage()
             requester.ajax_request_no_tokens("/api/v1.0/create_organization","POST",true,payload).done(result => {
-                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
-                requester.savetolocalstorage("access_token", result.access_token)
-                requester.savetolocalstorage("refresh_token", result.refresh_token)
-                requester.savetolocalstorage("user_id",result.user_id)
-                requester.savetolocalstorage("employer",result.employer.employer)
-                requester.savetolocalstorage("employername",result.employer.employername)
-                requester.savetolocalstorage("roledisplayname",result.roles[0].roledisplayname)
-                requester.savetolocalstorage("role_id",result.roles[0].role_id)
-                requester.savetolocalstorage("rolename",result.roles[0].rolename)
-                requester.savetolocalstorage("language_id",result.language_id)
-                requester.savetolocalstorage("profile",result.profile)
-                result.user_id==result.employer.employer ? this.$router.push({path:`/scaffolding/editcompanyprofile/${result.user_id}`}) : this.$router.push({path:`/scaffolding/userprofile/${result.user_id}`})
+                this.$router.push({path:'/token'})
             }).fail((jqXHR, textStatus, errorThrown)=>{
                 console.log(errorThrown)
+                console.log(jqXHR.responseJSON)
                 this.success_message=jqXHR.responseJSON.msg
                 this.showSnackbar=true
             })

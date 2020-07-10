@@ -45,7 +45,7 @@
                                     </template>
                                     <template v-slot:cell(_)="row">
                                         <b-button @click="seeaccount(row)" class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
-                                        <b-button @click="editaccount(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
+                                        <b-button @click="editaccount(row)" v-b-modal.edit-account-modal class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
                                     </template>
                                 </b-table>
                             </b-card-body>
@@ -54,6 +54,73 @@
                 </b-row>
             </b-container>
         </section>
+
+        <b-modal ref="edit-account-modal" size="md" id="edit-account-modal" title="Edit Account Information" hide-footer>
+            <b-container class="px-0">
+                <b-row>
+                    <b-col cols="12" class="px-0">
+                        <form class="card shadow-none mb-0" @submit.prevent="updateaccount">
+                            <b-card-body>
+                                <b-row>
+                                    <b-col sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Account Number</label>
+                                            <b-form-input size="sm" type="text" v-model="upfaccount.accountnumber" placeholder="Account Number"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Account Type</label>
+                                            <b-form-select size="sm" v-model="upfaccount.acclass_id" :options="acclassoptions" required></b-form-select>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Account Name</label>
+                                            <b-form-input size="sm" type="text" v-model="upfaccount.identifier" placeholder="Account Name" required></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Routing Number</label>
+                                            <b-form-input size="sm" type="text" v-model="upfaccount.routingnumber" placeholder="Routing Number"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Account Currency</label>
+                                            <b-form-select size="sm" v-model="upfaccount.setccurr" :options="currencyoptions"></b-form-select>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="6" md="6">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Opening Balance</label>
+                                            <b-form-input size="sm" type="number" step="1" v-model="upfaccount.balance" placeholder="Opening Balance"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col v-if="upfaccount.balance!=null" sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Opening Balance Memo</label>
+                                            <b-form-input size="sm" type="text" v-model="upfaccount.memo" placeholder="Opening Balance Memo"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Account Description</label>
+                                            <b-form-textarea :rows="1" :max-rows="6" v-model="upfaccount.description" placeholder="Brief description"></b-form-textarea>
+                                        </div>
+                                    </b-col>
+                                </b-row>
+                            </b-card-body>
+                            <b-card-footer class="text-right">
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
+                            </b-card-footer>
+                        </form>
+                    </b-col>
+                </b-row>
+            </b-container>
+        </b-modal>
+
         <b-modal ref="new-account-modal" size="md" id="new-account-modal" title="New Account" hide-footer>
             <b-container class="px-0">
                 <b-row>
@@ -75,7 +142,7 @@
                                     </b-col>
                                     <b-col sm="6" md="6">
                                         <div class="form-group mb-2">
-                                            <label class="form-label">Name</label>
+                                            <label class="form-label">Account Name</label>
                                             <b-form-input size="sm" type="text" v-model="faccount.identifier" placeholder="Account Name" required></b-form-input>
                                         </div>
                                     </b-col>
@@ -87,25 +154,25 @@
                                     </b-col>
                                     <b-col sm="6" md="6">
                                         <div class="form-group mb-2">
-                                            <label class="form-label">Name</label>
+                                            <label class="form-label">Account Currency</label>
                                             <b-form-select size="sm" v-model="faccount.setccurr" :options="currencyoptions"></b-form-select>
                                         </div>
                                     </b-col>
                                     <b-col sm="6" md="6">
                                         <div class="form-group mb-2">
-                                            <label class="form-label">Activation Date</label>
-                                            <b-form-datepicker size="sm" type="text" v-model="faccount.timecreated" placeholder="Activation date"></b-form-datepicker>
-                                        </div>
-                                    </b-col>
-                                    <b-col sm="6" md="6">
-                                        <div class="form-group mb-2">
                                             <label class="form-label">Opening Balance</label>
-                                            <b-form-input size="sm" type="text" v-model="faccount.balance" placeholder="Opening Balance"></b-form-input>
+                                            <b-form-input size="sm" type="number" step="1" v-model="faccount.balance" placeholder="Opening Balance"></b-form-input>
                                         </div>
                                     </b-col>
-                                    <b-col sm="6" md="6">
+                                    <b-col sm="12" md="12">
                                         <div class="form-group mb-2">
-                                            <label class="form-label">Memo / Description</label>
+                                            <label class="form-label">Opening Balance Memo</label>
+                                            <b-form-input :disabled="faccount.balance!=null || faccount.balance<=0" size="sm" type="text" v-model="faccount.memo" placeholder="Opening Balance Memo"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="12" md="12">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Account Description</label>
                                             <b-form-textarea :rows="1" :max-rows="6" v-model="faccount.description" placeholder="Brief description"></b-form-textarea>
                                         </div>
                                     </b-col>
@@ -150,18 +217,25 @@ export default {
             accountsitems:null,accountsfields:null,
             acclassoptions:[{value:null,text:"Select Class"}],
             currencyoptions:[{value:null,text:"Select Currency"}],
-            faccount:{
+            upfaccount:{
                 accountnumber:null,identifier:null,routingnumber:null,setccurr:null,
                 description:null,acclass_id:null,balance:null,timecreated:null,
-                member_id:requester.getfromlocalstorage("employer"),
-                language_id:requester.getfromlocalstorage("language_id"),
+                member_id:requester.getfromlocalstorage("employer"),memo:null,
+                language_id:requester.getfromlocalstorage("language_id"),faccount_id:null,
+            },
+            faccount:{
+                accountnumber:null,identifier:null,routingnumber:null,setccurr:null,
+                description:null,acclass_id:null,balance:0,timecreated:null,
+                member_id:requester.getfromlocalstorage("employer"),memo:null,
+                language_id:requester.getfromlocalstorage("language_id")
             }
         }
     },
     created(){
         var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
         var listaccounts=verification.then(result=>{
-            return requester.ajax_request("/api/v1.0/list_accounts","POST",this.ac_token,this.rf_token,true,{member_id:this.user_id,language_id:this.language_id})
+            console.log(result)
+            return requester.ajax_request("/api/v1.0/list_accounts","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id})
         }).fail((jqXHR,textStatus,errorThrown) => {
             this.$router.push({path:'/login'})
             console.log(jqXHR.responseJSON)
@@ -169,8 +243,9 @@ export default {
             console.log(errorThrown)
         })
         var listclasses=listaccounts.then(result => {
+            console.log(result)
             this.accountsitems=result
-            this.accountsfields=['account_number','identifier','account_class','currency','balance','description','_']
+            this.accountsfields=['account_number','identifier','account_class','currency','credit','debit','description','_']
             this.totalRows=this.accountsitems.length
             return requester.ajax_request("/api/v1.0/list_acclasses","POST",this.ac_token,this.rf_token,true,{member_id:this.user_id,language_id:this.language_id})
         })
@@ -187,23 +262,47 @@ export default {
         })
     },
     methods:{
+        updateaccount(){
+            const payload={...this.upfaccount}
+            requester.ajax_request("/api/v1.0/update_account","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                this.success_message=result.msg
+                this.showSnackbar=true
+                this.accountsfields=['account_number','identifier','account_class','currency','credit','debit','description','_']
+                this.accountsitems=result.accountsdata
+                this.totalRows=result.accountsdata.length
+                this.$refs['edit-account-modal'].hide()
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },
         seeaccount(row){
-            let idx=row.index
-            let faccount_id=this.accountsitems[idx].faccount_id
+            let faccount_id=row.item.faccount_id
             this.$router.push( {path:`/scaffolding/accountdetails/${faccount_id}`} )
         },
-        editaccount(row){},
+        editaccount(row){
+            console.log( row.item )
+            this.upfaccount.acclass_id=row.item.acclass_id
+            this.upfaccount.accountnumber=row.item.accountnumber
+            this.upfaccount.routingnumber=row.item.routingnumber
+            this.upfaccount.setccurr=row.item.setccurr
+            this.upfaccount.description=row.item.description
+            this.upfaccount.balance=parseFloat(row.item.balance)
+            this.upfaccount.identifier=row.item.identifier
+            this.upfaccount.faccount_id=row.item.faccount_id
+        },
         onFiltered(filteredItems){
             this.totalRows=filteredItems.length
             this.currentPage=1
         },
         addnewaccount(){
             const payload={...this.faccount}
+            // console.log(payload)
             requester.ajax_request("/api/v1.0/create_account","POST",this.ac_token,this.rf_token,true,payload).done(result => {
-                console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
-                this.accountsfields=['account_number','identifier','account_class','currency','balance','description']
+                this.accountsfields=['account_number','identifier','account_class','currency','credit','debit','description','_']
                 this.accountsitems=result.accountsdata
                 this.totalRows=result.accountsdata.length
                 this.$refs['new-account-modal'].hide()

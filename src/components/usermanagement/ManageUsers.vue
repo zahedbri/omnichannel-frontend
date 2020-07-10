@@ -5,7 +5,7 @@
                 <div class="d-flex  align-items-center justify-content-between">
                     <h1 class="breadcrumb">User Management</h1>
                     <div>
-                        <b-dropdown variant="primary" size="sm" right text="New user">
+                        <b-dropdown variant="success" size="sm" right text="New user">
                             <b-dropdown-item v-b-modal.new-staff-modal>Add new staff</b-dropdown-item>
                             <b-dropdown-item v-b-modal.new-vendor-modal>Add new vendor</b-dropdown-item>
                         </b-dropdown>
@@ -41,10 +41,11 @@
                                 <b-table bordered show-empty striped hover :current-page="currentPage" :per-page="perPage" :items="userstableitems" :fields="userstablefields" :filter="filter" @filtered="onFiltered">
                                     <template v-slot:cell(action)="row">
                                         <div>
-                                            <b-dropdown variant="primary" size="sm" right text="Manage">
+                                            <b-dropdown variant="success" size="sm" right text="Manage">
                                                 <b-dropdown-item v-if="!row.item.ismaster" :disabled="row.item.state==1" @click="approveuser(row)"><i class="far fa-check-circle mr-1"></i>Approve user</b-dropdown-item>
                                                 <b-dropdown-item v-if="!row.item.ismaster" :disabled="row.item.state==0" @click="suspenduser(row)"><i class="far fa-times-circle mr-1"></i>Suspend user</b-dropdown-item>
                                                 <b-dropdown-item v-b-modal.add-role-modal @click="beforeassignment(row)">Assign roles</b-dropdown-item>
+                                                <b-dropdown-item v-if="row.item.ismaster" @click="makerootvendor(row)">Make Vendor</b-dropdown-item>
                                             </b-dropdown>
                                         </div>
                                     </template>
@@ -289,17 +290,27 @@ export default {
     },
     created(){
         var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
-        var usersdata=verification.then(result=>{
+        var rolesdata=verification.then(result=>{
             // console.log(result)
-            return requester.ajax_request("/api/v1.0/list_all_members","GET",this.ac_token,this.rf_token,false,null)
+            return requester.ajax_request("/api/v1.0/list_roles","POST",this.ac_token,this.rf_token,true,{language_id:1})
         }).fail((jqXHR,textStatus,errorThrown) => {
-            this.$router.push({path:'/login'})
+            // setTimeout(() => { this.$router.push({path:'/login'}) }, 3000);
             console.log(jqXHR.responseJSON)
             console.log(textStatus)
             console.log(errorThrown)
         })
-        var rolesdata=usersdata.then(result => {
+        var usersdata=rolesdata.then(result => {
             console.log(result)
+            result.forEach((item)=>{
+                this.roleoptions.push({value:item.role_id,text:item.displayname})
+            })
+            return requester.ajax_request("/api/v1.0/list_all_members","GET",this.ac_token,this.rf_token,false,null)            
+        }).fail((jqXHR,textStatus,errorThrown) => {
+            console.log(jqXHR.responseJSON)
+            console.log(textStatus)
+            console.log(errorThrown)
+        })
+        usersdata.then(result => {
             result.forEach((item)=>{
                 if(item.member.type=='O'){
                     this.allmemberoptions.push({value:item.orgentity.orgentity_id,text:item.orgentity.orgentityname})
@@ -319,19 +330,25 @@ export default {
                 }
             })
             this.totalRows=this.userstableitems.length
-            return requester.ajax_request("/api/v1.0/list_roles","POST",this.ac_token,this.rf_token,true,{language_id:1})
-        }).fail((jqXHR,textStatus,errorThrown) => {
-            console.log(jqXHR.responseJSON)
-            console.log(textStatus)
-            console.log(errorThrown)
-        })
-        rolesdata.then(result => {
-            result.forEach((item)=>{
-                this.roleoptions.push({value:item.role_id,text:item.displayname})
-            })
         })
     },
     methods:{
+        makerootvendor(row){
+            let vendor_id=row.item.employerid
+            let vendorname=row.item.employer
+            let language_id=this.language_id
+            const payload={vendor_id:vendor_id,vendorname:vendorname,language_id:language_id}
+            requester.ajax_request("/api/v1.0/make_root_vendor","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                this.success_message=result.msg
+                this.showSnackbar=true
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },
         formatPhone(value){
             const PNF=libphonenumber.PhoneNumberFormat
             const phoneUtil=libphonenumber.PhoneNumberUtil.getInstance()

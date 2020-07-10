@@ -7,7 +7,7 @@
                     <div>
                         <b-dropdown variant="primary" size="sm" right text="Create">
                             <b-dropdown-item v-b-modal.paymethod-modal >Add payment method</b-dropdown-item>
-                            <b-dropdown-item v-b-modal.returnmethod-modal >Add return payment method</b-dropdown-item>
+                            <!-- <b-dropdown-item v-b-modal.returnmethod-modal >Add return payment method</b-dropdown-item> -->
                         </b-dropdown>
                     </div>
                 </div>
@@ -46,14 +46,14 @@
                                             </a>
                                         </div>
                                     </template>
-                                    <template v-slot:cell(_)>
-                                        <div class="d-flex align-items-center justify-content-center">
+                                    <template v-slot:cell(_)="row">
+                                        <div v-if="Object.keys(row.item).length" class="d-flex align-items-center justify-content-center">
                                             <b-button class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="far fa-trash-alt"></i></b-button>
                                             <b-button class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
                                         </div>
                                     </template>
-                                    <template v-slot:cell(*)>
-                                        <div class="d-flex align-items-center justify-content-center">
+                                    <template v-slot:cell(*)="row">
+                                        <div v-if="Object.keys(row.item).length" class="d-flex align-items-center justify-content-center">
                                             <a disabled class="img-sim d-flex justify-content-center align-items-center c-pointer">
                                                 <i class="far fa-credit-card white-text"></i>
                                             </a>
@@ -200,13 +200,13 @@ export default {
             this.paymethoditems=result
             this.paymethodfields=['*','name','type','store','description','created','updated','_']
             this.totalRows=result.length
-            return requester.ajax_request("/api/v1.0/list_payment_policies","POST",this.ac_token,this.rf_token,true,{policytype_id:'ReturnPayment',language_id:this.language_id})
+            // return requester.ajax_request("/api/v1.0/list_payment_policies","POST",this.ac_token,this.rf_token,true,{policytype_id:'ReturnPayment',language_id:this.language_id})
         })
-        returnpolicydata.then(result=>{
-            result.forEach((item)=>{
-                this.paymethoditems.push(item)
-            })
-        })
+        // returnpolicydata.then(result=>{
+        //     result.forEach((item)=>{
+        //         this.paymethoditems.push(item)
+        //     })
+        // })
     },
     methods:{
         onFiltered(filteredItems){

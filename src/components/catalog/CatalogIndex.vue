@@ -7,7 +7,6 @@
                     <div>
                         <b-dropdown variant="success" size="sm" right text="New catalog">
                             <b-dropdown-item v-b-modal.new-catalog-modal>Add new catalog</b-dropdown-item>
-                            <!-- <b-dropdown-item v-b-modal.multiple-catalog-modal>Define multiple catalogs</b-dropdown-item> -->
                             <b-dropdown-item v-b-modal.new-category-modal>Add new category</b-dropdown-item>
                             <b-dropdown-item v-b-modal.new-item-modal>Add new product</b-dropdown-item>
                             <b-dropdown-item>Add multiple products</b-dropdown-item>
@@ -136,7 +135,6 @@
                                         </b-col>
                                         <b-col sm="4" md="4" class="my-0 d-flex justify-content-end">
                                             <b-button @click="changeview('g')" class="mr-2 btn-dull-border" :class="{active:isgrid}" size="sm" variant="outline-primary"><i class="fas fa-th"></i></b-button>
-                                            <b-button @click="changeview('l')" class="mr-2 btn-dull-border" :class="{active:islist}" size="sm" variant="outline-primary"><i class="fas fa-list"></i></b-button>
                                             <b-pagination v-if="isgrid==true" v-model="currentPage2" @input="selectpage" :total-rows="totalRows2" :per-page="perPage2" size="sm" class="my-0"></b-pagination>
                                             <b-pagination v-else-if="islist==true" v-model="currentPage3" @input="selectpage" :total-rows="totalRows3" :per-page="perPage3" size="sm" class="my-0"></b-pagination>
                                         </b-col>
@@ -145,27 +143,11 @@
                             </b-col>
                         </b-row>
                         <b-row class="d-flex">
-                            <b-col v-if="islist" cols="12" class="pl-1 pr-1">
-                                <b-card no-body>
-                                    <b-card-body>
-                                        <b-table bordered show-empty striped hover :current-page="currentPage3" :per-page="perPage3" :items="inventoryitems" :fields="inventoryfields">
-                                            <template v-slot:cell(item)="row">
-                                                <div class="content d-flex align-items-center justify-content-left">
-                                                    <a href="#" style="margin-right:10px!important; width:45px!important; height:45px !important;">
-                                                        <img class="img-fluid rounded inv-list-img" :src="row.item.image">
-                                                    </a>
-                                                    <div class="">
-                                                        <span class="d-inline-block" style="font-size:1.0em;"> {{row.item.name}}</span>
-                                                        <span class="d-block" style="color:#555; font-size:0.8em;"><strong>Type:</strong> {{row.item.type}} </span>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                        </b-table>
-                                    </b-card-body>
-                                </b-card>
-                            </b-col>
-                            <b-col v-else-if="isgrid" v-for="item in catentryitems" :key="item.catentry_id" md="6" xl="4" class="cat-item pl-1 pr-1">
+                            <b-col v-for="item in catentryitems" :key="item.catentry_id" md="6" xl="4" class="cat-item pl-1 pr-1">
                                 <b-card no-body class="mb-2">
+                                    <div class="card-close">
+                                        <b-button @click="edititem(item)" v-b-modal.edit-item-modal class="border-0" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt text-xsmall"></i></b-button>
+                                    </div>
                                     <b-card-body>
                                         <div class="media align-items-center">
                                             <span v-if="item.fullimage==null" class="avatar avatar-xl mr-3" :style="{backgroundImage:`url(${defaultproductphoto})`}"></span>
@@ -207,7 +189,7 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -259,16 +241,17 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
                 </b-row>
             </b-container>
         </b-modal>
-        <b-modal ref="new-item-modal" size="lg" id="new-item-modal" hide-footer>
+
+        <b-modal ref="edit-item-modal" size="lg" id="edit-item-modal" hide-footer>
             <template v-slot:modal-header>
-                <h5>Add Inventory Item</h5>
+                <h5>Edit Inventory Item</h5>
                 <div>
                     <b-dropdown variant="success" size="sm" left :text="defaultoption ? 'Product' : 'Composite' ">
                         <b-dropdown-item @click="defaultoption=true">Product</b-dropdown-item>
@@ -280,25 +263,25 @@
             <b-container v-if="defaultoption==true" class="px-0">
                 <b-row>
                     <b-col cols="12" class="px-0">
-                        <form class="card shadow-none mb-0" @submit.prevent="submitnewitem">
+                        <form class="card shadow-none mb-0" @submit.prevent="updateitem">
                             <b-card-body>
                                 <b-row>
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Item name</label>
-                                            <b-form-input size="sm" type="text" v-model="catentry.name" placeholder="Item name" required></b-form-input>
+                                            <b-form-input size="sm" type="text" v-model="upcatentry.name" placeholder="Item name" required></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">SKU / Part Number</label>
-                                            <b-form-input size="sm" type="text" v-model="catentry.partnumber" placeholder="SKU or Product Code"></b-form-input>
+                                            <b-form-input size="sm" type="text" v-model="upcatentry.partnumber" readonly placeholder="SKU or Product Code"></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Manufacturer</label>
-                                            <b-form-input size="sm" type="text" v-model="catentry.mfname" placeholder="Manufacturer's name"></b-form-input>
+                                            <b-form-input size="sm" type="text" v-model="upcatentry.mfname" placeholder="Manufacturer's name"></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
@@ -313,20 +296,20 @@
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Make available from</label>
-                                            <b-form-datepicker size="sm" type="text" v-model="catentry.availabilitydate" placeholder="Available from"></b-form-datepicker>
+                                            <b-form-datepicker size="sm" type="text" v-model="upcatentry.availabilitydate" placeholder="Available from"></b-form-datepicker>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Expiry date</label>
-                                            <b-form-datepicker size="sm" type="text" v-model="catentry.endofservicedate" placeholder="Expiry date"></b-form-datepicker>
+                                            <b-form-datepicker size="sm" type="text" v-model="upcatentry.endofservicedate" placeholder="Expiry date"></b-form-datepicker>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-4">
                                             <label class="form-label">Currency</label>
                                             <template>
-                                                <b-form-input required placeholder="Fill &amp; Select Currency" v-model="catentry.currency" @change.native="changedcurrency" size="sm" list="currency-list"></b-form-input>
+                                                <b-form-input required placeholder="Fill &amp; Select Currency" v-model="upcatentry.currency" @change.native="changedcurrency" size="sm" list="currency-list"></b-form-input>
                                                 <datalist id="currency-list">
                                                     <option>Select Currency</option>
                                                     <option v-for="currency in curselects" :key="currency.setccurr">{{currency.description}}</option>
@@ -337,31 +320,31 @@
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-4">
                                             <label class="form-label">List Price</label>
-                                            <b-form-input size="sm" type="number" required step="0.01" v-model="catentry.listprice" placeholder="List Price"></b-form-input>
+                                            <b-form-input size="sm" type="number" required step="0.01" v-model="upcatentry.listprice" placeholder="List Price"></b-form-input>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-4">
                                             <label class="form-label">Catalog</label>
-                                            <b-form-select size="sm" v-model="catentry.catalog_id" @change.native="categoryforcatalog" :options="catalogselect" required></b-form-select>
+                                            <b-form-select size="sm" v-model="upcatentry.catalog_id" @change="categoryforcatalog" :options="catalogselect" required></b-form-select>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-4">
                                             <label class="form-label">Category</label>
-                                            <b-form-select size="sm" v-model="catentry.catgroup_id" :options="itemcategories" required></b-form-select>
+                                            <b-form-select size="sm" v-model="upcatentry.catgroup_id" :options="itemcategories" required></b-form-select>
                                         </div>
                                     </b-col>
                                     <b-col sm="8" md="8">
                                         <div class="form-group mb-4">
                                             <label class="form-label">Product description</label>
-                                            <b-form-textarea :rows="1" :max-rows="6" v-model="catentry.shortdescription" placeholder="Brief product description"></b-form-textarea>
+                                            <b-form-textarea :rows="1" :max-rows="6" v-model="upcatentry.shortdescription" placeholder="Brief product description"></b-form-textarea>
                                         </div>
                                     </b-col>
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -440,7 +423,196 @@
                                                         </b-row>
                                                     </b-card-body>
                                                     <b-card-footer class="text-right">
-                                                        <button class="btn btn-primary btn-sm" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                                        <b-button variant="success" class="ry btn-sm" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
+                                                    </b-card-footer>
+                                                </form>
+                                            </b-col>
+                                        </b-row>
+                                    </template>
+                                </b-table>
+                            </b-card>
+                        </b-collapse>
+                    </b-col>
+                </b-row>
+            </b-container>
+        </b-modal>
+
+
+        <b-modal ref="new-item-modal" size="lg" id="new-item-modal" hide-footer>
+            <template v-slot:modal-header>
+                <h5>Add Inventory Item</h5>
+                <div>
+                    <b-dropdown variant="success" size="sm" left :text="defaultoption ? 'Product' : 'Composite' ">
+                        <b-dropdown-item @click="defaultoption=true">Product</b-dropdown-item>
+                        <b-dropdown-item @click="defaultoption=false">Composite</b-dropdown-item>
+                    </b-dropdown>
+                    <button type="button" aria-label="Close" class="close">×</button>
+                </div>
+            </template>
+            <b-container v-if="defaultoption==true" class="px-0">
+                <b-row>
+                    <b-col cols="12" class="px-0">
+                        <form class="card shadow-none mb-0" @submit.prevent="submitnewitem">
+                            <b-card-body>
+                                <b-row>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Item name</label>
+                                            <b-form-input size="sm" type="text" v-model="catentry.name" placeholder="Item name" required></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">SKU / Part Number</label>
+                                            <b-form-input size="sm" type="text" v-model="catentry.partnumber" placeholder="SKU or Product Code"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Manufacturer</label>
+                                            <b-form-input size="sm" type="text" v-model="catentry.mfname" placeholder="Manufacturer's name"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label mr-2">Upload Image</label>
+                                            <div class="custom-file b-form-file b-custom-control-sm">
+                                                <input type="file" id="productimage" ref="productimage" @change="previewproductimage" multiple="multiple" class="custom-file-input">
+                                                <label for="productimage" data-browse="Browse" class="custom-file-label">{{productphotolabelvalue}}</label>
+                                            </div>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Make available from</label>
+                                            <b-form-datepicker size="sm" type="text" v-model="catentry.availabilitydate" placeholder="Available from"></b-form-datepicker>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">Expiry date</label>
+                                            <b-form-datepicker size="sm" type="text" v-model="catentry.endofservicedate" placeholder="Expiry date"></b-form-datepicker>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Currency</label>
+                                            <template>
+                                                <b-form-input required placeholder="Fill &amp; Select Currency" v-model="catentry.currency" @change.native="changedcurrency" size="sm" list="currency-list"></b-form-input>
+                                                <datalist id="currency-list">
+                                                    <option>Select Currency</option>
+                                                    <option v-for="currency in curselects" :key="currency.setccurr">{{currency.description}}</option>
+                                                </datalist>
+                                            </template>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">List Price</label>
+                                            <b-form-input size="sm" type="number" required step="0.01" v-model="catentry.listprice" placeholder="List Price"></b-form-input>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Catalog</label>
+                                            <b-form-select size="sm" v-model="catentry.catalog_id" @change="categoryforcatalog" :options="catalogselect" required></b-form-select>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="3" md="4">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Category</label>
+                                            <b-form-select size="sm" v-model="catentry.catgroup_id" :options="itemcategories" required></b-form-select>
+                                        </div>
+                                    </b-col>
+                                    <b-col sm="8" md="8">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Product description</label>
+                                            <b-form-textarea :rows="1" :max-rows="6" v-model="catentry.shortdescription" placeholder="Brief product description"></b-form-textarea>
+                                        </div>
+                                    </b-col>
+                                </b-row>
+                            </b-card-body>
+                            <b-card-footer class="text-right">
+                                <b-button variant="success" class="btn" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
+                            </b-card-footer>
+                        </form>
+                    </b-col>
+                    <b-col cols="12" class="px-0">
+                        <b-collapse :visible="attrvaluevisible" id="collapse-attrvalues" class="mt-2">
+                            <b-card class="mb-0 px-0">
+                                <b-table bordered show-empty striped hover :current-page="currentPage" :per-page="perPage" :items="attrvalueitems" :fields="attrvaluefields">
+                                    <template v-slot:head(show_details)>
+                                        <b-form-checkbox disabled></b-form-checkbox>
+                                    </template>
+                                    <template v-slot:cell(show_details)="row">
+                                        <b-form-checkbox v-model="row.detailsShowing" @change="row.toggleDetails">
+                                            {{ row.detailsShowing ? 'Hide' : 'Show' }}
+                                        </b-form-checkbox>
+                                    </template>
+                                    <template v-slot:head(action)>
+                                        <div class="text-center">
+                                            <b-button class="btn-outline-dark btn-sm rounded mr-1" disabled size="sm" type="button"><i class="fas fa-plus"></i></b-button>
+                                            <b-button class="btn-outline-dark btn-sm rounded" disabled size="sm" type="button"><i class="far fa-trash-alt"></i></b-button>
+                                        </div>
+                                    </template>
+                                    <template v-slot:cell(action)="row">
+                                        <div class="text-center">
+                                            <b-button class="btn-outline-dark btn-sm rounded mr-1" @click="addattrvaluerow(row)" size="sm" type="button"><i class="fas fa-plus"></i></b-button>
+                                            <b-button class="btn-outline-dark btn-sm rounded" @click="removeattrvaluerow(row.index)" size="sm" type="button"><i class="far fa-trash-alt"></i></b-button>
+                                        </div>
+                                    </template>
+                                    <template v-slot:row-details>
+                                        <b-row class="justify-content-center bg-white">
+                                            <b-col cols="10" class="mr-auto ml-auto">
+                                                <form class="card shadow-sm mb-0 border-1" @submit.prevent="addattribute">
+                                                    <b-card-body>
+                                                        <b-row>
+                                                            <b-col sm="4" md="4">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="form-label">Attribute</label>
+                                                                    <b-form-select size="sm" @change.native="changedattribute" v-model="attrform.attr_id" :options="attributeoptions" required></b-form-select>
+                                                                </div>
+                                                            </b-col>
+                                                            <b-col sm="4" md="4">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="form-label">Type</label>
+                                                                    <b-form-select size="sm" v-model="attrform.attrtype_id" :options="attrtypeoptions" required></b-form-select>
+                                                                </div>
+                                                            </b-col>
+                                                            <b-col v-if="attrform.attrtype_id==null" sm="4" md="4">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="form-label">Attribute Value</label>
+                                                                    <b-form-input size="sm" type="text" v-model="attrform.value" placeholder="Attribute Value"></b-form-input>
+                                                                </div>
+                                                            </b-col>
+                                                            <b-col v-else-if="attrform.attrtype_id=='String'" sm="4" md="4">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="form-label">Attribute Value</label>
+                                                                    <b-form-input size="sm" type="text" v-model="attrform.value" placeholder="String Value"></b-form-input>
+                                                                </div>
+                                                            </b-col>
+                                                            <b-col v-else-if="attrform.attrtype_id=='Integer'" sm="4" md="4">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="form-label">Attribute Value</label>
+                                                                    <b-form-input size="sm" type="text" v-model="attrform.value" placeholder="Integer Value"></b-form-input>
+                                                                </div>
+                                                            </b-col>
+                                                            <b-col v-else-if="attrform.attrtype_id=='Float'" sm="4" md="4">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="form-label">Attribute Value</label>
+                                                                    <b-form-input size="sm" type="text" v-model="attrform.value" placeholder="Float Value"></b-form-input>
+                                                                </div>
+                                                            </b-col>
+                                                            <b-col v-else-if="attrform.attrtype_id=='Datetime'" sm="4" md="4">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="form-label">Attribute Value</label>
+                                                                    <b-form-datepicker size="sm" type="text" v-model="attrform.value" placeholder="Date"></b-form-datepicker>
+                                                                </div>
+                                                            </b-col>
+                                                        </b-row>
+                                                    </b-card-body>
+                                                    <b-card-footer class="text-right">
+                                                        <b-button variant="success" class="btn-sm" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                                                     </b-card-footer>
                                                 </form>
                                             </b-col>
@@ -518,7 +690,7 @@
                                     <b-col sm="3" md="4">
                                         <div class="form-group mb-2">
                                             <label class="form-label">Catalog</label>
-                                            <b-form-select size="sm" v-model="catentrycomposite.catalog_id" @change.native="categoryforcatalog" :options="catalogselect" required></b-form-select>
+                                            <b-form-select size="sm" v-model="catentrycomposite.catalog_id" @change="categoryforcatalog" :options="catalogselect" required></b-form-select>
                                         </div>
                                     </b-col>
                                     <b-col sm="3" md="4">
@@ -536,17 +708,16 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" class="btn" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
-
                     </b-col>
                 </b-row>
                 <b-row>
                     <b-col cols="12" class="px-0 mt-4">
                         <b-card no-body class="shadow-none mb-4" style="border-top:1px solid #E9ECEF">
                             <b-card-header class="text-right">
-                                <button class="btn btn-primary btn-sm" @click="submitall" type="button"><i class="fas fa-save mr-1"></i>Save All</button>
+                                <b-button variant="success" class="btn-sm" @click="submitall" type="button"><i class="fas fa-save mr-1"></i>Save All</b-button>
                             </b-card-header>
                             <b-card-body>
                                 <b-table striped hover :items="relitems" :fields="relfields"></b-table>
@@ -590,7 +761,7 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" class="btn" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -628,7 +799,7 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <b-button variant="success" class="btn" type="submit"><i class="fas fa-save mr-1"></i>Save</b-button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -706,6 +877,13 @@ export default {
                 language_id:requester.getfromlocalstorage("language_id"),
                 member_id:requester.getfromlocalstorage("employer"),itemspc_id:null,catenttype_id:'Item',
                 partnumber:null,mfpartnumber:null,mfname:null,currency:null,listprice:null,
+                catalog_id:null,catgroup_id:null,lastupdate:null,endofservicedate:null,catentry_id:null,
+                name:null,shortdescription:null,fullimage:null,available:null,published:1,availabilitydate:null
+            },
+            upcatentry:{
+                language_id:requester.getfromlocalstorage("language_id"),
+                member_id:requester.getfromlocalstorage("employer"),itemspc_id:null,catenttype_id:'Item',
+                partnumber:null,mfpartnumber:null,mfname:null,currency:null,listprice:null,
                 catalog_id:null,catgroup_id:null,lastupdate:null,endofservicedate:null,
                 name:null,shortdescription:null,fullimage:null,available:null,published:1,availabilitydate:null
             },
@@ -739,8 +917,7 @@ export default {
             catalogfilelabelvalue:null,
         }
     },
-    computed:{
-    },
+    computed:{},
     created(){
         var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
         var catlistdata=verification.then(result=>{
@@ -767,7 +944,6 @@ export default {
             return requester.ajax_request("/api/v1.0/list_catentries","POST",this.ac_token,this.rf_token,true,{member_id:this.employer_id,language_id:this.language_id})
         })
         var accountlist=catentrylist.then(result => {
-            console.log(result)
             this.catentries=result
             return requester.ajax_request("/api/v1.0/list_accounts","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id})
         })
@@ -795,20 +971,52 @@ export default {
             this.composites=result
             return requester.ajax_request("/api/v1.0/read_catentries","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id,member_id:this.employer})
         })
-        var inventorydata=catentrydata.then(result => {
+        catentrydata.then(result => {
             this.combinedcatentries=result
             this.totalRows2=result.length
             this.catentryitems=requester.splitarr(result,this.perPage2)[0]
-            return requester.ajax_request("/api/v1.0/list_inventory","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
-        })
-        inventorydata.then(result=>{
-            // console.log(result)
-            this.inventoryitems=result
-            this.inventoryfields=['item','expires','quantity','store','warehouse']
-            this.totalRows3=result.length
         })
     },
     methods:{
+        updateitem(){
+            const payload={...this.upcatentry}
+            // console.log(payload)
+            requester.ajax_request("/api/v1.0/update_catentry","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                this.success_message=result.msg
+                this.showSnackbar=true
+            }).fail((jqXHR,textStatus,errorThrown) => {
+                this.success_message=jqXHR.responseJSON.msg
+                this.showSnackbar=true
+                console.log(jqXHR.responseJSON)
+                console.log(textStatus)
+                console.log(errorThrown)
+            })
+        },
+        edititem(item){
+            console.log(item)
+            this.upcatentry.availabilitydate=item.availabilitydate
+            this.upcatentry.available=item.available
+            this.upcatentry.catalog_id=item.catalog_id
+            this.upcatentry.catentry_id=item.catentry_id
+            this.upcatentry.catenttype_id=item.catenttype_id
+            this.upcatentry.catgroup_id=item.catgroup_id
+            this.upcatentry.currency=item.currency
+            this.upcatentry.endofservicedate=item.endofservicedate
+            this.upcatentry.fullimage=item.fullimage
+            this.upcatentry.itemspc_id=item.itemspc_id
+            this.upcatentry.member_id=item.member_id
+            this.upcatentry.mfname=item.mfname
+            this.upcatentry.mfpartnumber=item.mfpartnumber
+            this.upcatentry.name=item.name
+            this.upcatentry.partnumber=item.partnumber
+            this.upcatentry.listprice=item.price
+            this.upcatentry.published=item.published
+            this.upcatentry.shortdescription=item.shortdescription
+            this.categoryforcatalog(item.catalog_id)
+        },
+        seeitem(item){
+            this.$router.push({path:`/scaffolding/itemdetails/${item.catentry_id}`})
+        },
         previewcatalogfile(){
             let formdata = new FormData()
             let input = this.$refs.catalogfile.files[0]
@@ -819,7 +1027,6 @@ export default {
                 this.success_message = "Successfully uploaded "+result.name+" to storage."
                 this.showSnackbar = true
                 // this.warehouseinfo.photourl=result.url
-                console.log(result)
             }).fail((jqXHR,textStatus,errorThrown) => {
                 console.log(jqXHR.responseJSON)
                 console.log(textStatus)
@@ -928,8 +1135,7 @@ export default {
                 console.log(errorThrown)
             })
         },
-        categoryforcatalog(e){
-            let val=e.target.value
+        categoryforcatalog(val){
             requester.ajax_request("/api/v1.0/catgroups_for_catalog","POST",this.ac_token,this.rf_token,true,{catalog_id:val}).done(result => {
                 result.unshift({value:null,text:"Select Category"})
                 this.itemcategories=result
@@ -944,7 +1150,10 @@ export default {
         changedcurrency(e){
             let val=e.target.value
             this.curselects.forEach((item)=>{
-                if(item.setccurr==val){this.catentry.currency=item.setccurr}
+                if(item.setccurr==val){
+                    this.catentry.currency=item.setccurr
+                    this.upcatentry.currency=item.setccurr
+                }
             })
         },
         showdetails(row){
@@ -977,6 +1186,7 @@ export default {
                 this.success_message = "Successfully uploaded "+result.name+" to storage."
                 this.showSnackbar = true
                 this.catentry.fullimage=result.url
+                this.upcatentry.fullimage=result.url
             }).fail((jqXHR,textStatus,errorThrown) => {
                 console.log(jqXHR.responseJSON)
                 console.log(textStatus)

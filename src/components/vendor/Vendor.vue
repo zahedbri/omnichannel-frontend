@@ -53,7 +53,7 @@
                                                         </div>
                                                     </template>
                                                     <template v-slot:cell(_)=row>
-                                                        <div class="d-flex align-items-center justify-content-center">
+                                                        <div v-if="row.item.ra_id" class="d-flex align-items-center justify-content-center">
                                                             <b-button @click="podetails(row)" class="dull-border2 mr-1" variant="outline-secondary" type="button"><i class="fas fa-eye"></i></b-button>
                                                             <b-button class="dull-border2 mr-0" variant="outline-secondary" type="button"><i class="fas fa-pencil-alt"></i></b-button>
                                                         </div>
@@ -128,7 +128,7 @@
                                     <b-col sm="12" md="12">
                                         <div class="form-group mb-4">
                                             <label class="form-label">PO Number</label>
-                                            <b-form-input size="sm" type="text" v-model="ra.externalid" readonly placeholder="Purchase Order Number" required></b-form-input>
+                                            <b-form-input size="sm" type="text" v-model="ra.externalid" placeholder="Purchase Order Number"></b-form-input>
                                         </div>
                                     </b-col>
                                 </b-row>
@@ -180,6 +180,7 @@ export default {
             ra:{
                 vendor_id:null,store_id:null,orderdate:null,openindicator:'Y',
                 dateclosed:null,lastupdate:null,createtime:null,externalid:null,
+                member_id:requester.getfromlocalstorage("employer"),
             },
         }
     },
@@ -210,12 +211,12 @@ export default {
             result.forEach((item)=>{
                 this.storeoptions.push({value:item.storeent_id,text:item.identifier})
             })
-            return requester.ajax_request("/api/v1.0/read_ra","GET",this.ac_token,this.rf_token,false,null)
+            return requester.ajax_request("/api/v1.0/read_ra","POST",this.ac_token,this.rf_token,true,{member_id:this.employer})
         })
         var receiptsdata=radata.then(result=>{
-            console.log(result)
+            // console.log(result)
             this.raitems=result
-            this.rafields=['po_number','vendor','store','created','ordered','open','closed','_']
+            this.rafields=['PO_Number','vendor','store','created','ordered','open','closed','_']
             this.totalRows=result.length
             return requester.ajax_request("/api/v1.0/read_receipts","GET",this.ac_token,this.rf_token,false,null)
         })
@@ -223,7 +224,7 @@ export default {
             // console.log(result)
             this.receiptitems=result
             this.totalRows2=result.length
-            this.receiptfields=['PO_number','unit_cost','created','on_hand','quantity','received','type','store','updated','vendor','warehouse']
+            this.receiptfields=['PO_Number','unit_cost','created','on_hand','quantity','received','type','store','updated','vendor','warehouse']
         })
     },
     methods:{
@@ -237,7 +238,7 @@ export default {
             this.currentPage=1
         },
         formulatepo(e){
-            this.ra.externalid="PO"+'/'+this.ra.vendor_id+'/'+this.ra.store_id
+            // this.ra.externalid="PO"+'/'+this.ra.vendor_id+'/'+this.ra.store_id
         },
         submitra(){
             const payload={...this.ra}
@@ -245,7 +246,7 @@ export default {
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.raitems=result.radata
-                this.rafields=['po_number','vendor','store','created','ordered','open','closed','_']
+                this.rafields=['PO_Number','vendor','store','created','ordered','open','closed','_']
                 this.totalRows=result.radata.length
                 this.$refs['new-po-modal'].hide()
 

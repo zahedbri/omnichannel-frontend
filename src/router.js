@@ -30,6 +30,13 @@ import MobileOps from './components/stores/MobileOps.vue'
 import Token from './components/login/Token.vue'
 import EditUserProfile from './components/userprofile/EditUserProfile.vue'
 import AccountDetails from './components/accounting/AccountDetails.vue'
+import Orders from './components/orders/Orders.vue'
+import OrderItems from './components/orders/OrderItems.vue'
+
+// latest
+import CreditAnalytics from './components/dashboard/CreditAnalytics.vue'
+import CustomerOrders from './components/customers/CustomerOrders.vue'
+import CustomerOrderItems from './components/customers/CustomerOrderItems.vue'
 
 Vue.use(Router)
 
@@ -172,6 +179,16 @@ export default new Router({
                     component:PODetails
                 },
                 {
+                    path:'orders',
+                    name:'orders',
+                    component:Orders
+                },
+                {
+                    path:'orderitems/:orders_id',
+                    name:'orderitems',
+                    component:OrderItems
+                },
+                {
                     path:'payment',
                     name:'payment',
                     component:Payment
@@ -185,6 +202,22 @@ export default new Router({
                     path:'mobileops',
                     name:'mobileops',
                     component:MobileOps
+                },
+                // latest
+                {
+                    path:'creditanalytics',
+                    name:'creditanalytics',
+                    component:CreditAnalytics
+                },
+                {
+                    path:'customerorders/:owner_id',
+                    name:'customerorders',
+                    component:CustomerOrders
+                },
+                {
+                    path:'customerorderitems/:orders_id',
+                    name:'customerorderitems',
+                    component:CustomerOrderItems
                 }
             ]
         }

@@ -718,7 +718,7 @@ export default {
         var trade=verification.then(result=>{
             return requester.ajax_request("/api/v1.0/read_contract","POST",this.ac_token,this.rf_token,true,{language_id:requester.getfromlocalstorage("language_id"),trading_id:this.$route.params.trading_id})
         }).fail((jqXHR,textStatus,errorThrown) => {
-            this.$router.push({path:'/login'})
+            // this.$router.push({path:'/login'})
             console.log(jqXHR.responseJSON)
             console.log(textStatus)
             console.log(errorThrown)
@@ -756,7 +756,6 @@ export default {
             result.forEach((item)=>{
                 this.catalogoptions.push({value:item.catalog_id,text:item.name})
             })
-            this.catalog_id=result[0].catalog_id
             return requester.ajax_request("/api/v1.0/list_tradepositions","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,trading_id:this.$route.params.trading_id})
         })
         var catentlist=tradeposcns.then(result => {
@@ -808,7 +807,6 @@ export default {
             return requester.ajax_request("/api/v1.0/list_payment_policies","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id,policytype_id:"Payment"})
         })
         var paymentpolicydata=paymethodsdata.then(result=>{
-            // console.log(result)
             result.forEach((item)=>{
                 if(item.storeent_id==this.deployed_store_id){
                     this.paymethodoptions.push({text:item.name,value:item.policy_id})
@@ -958,7 +956,9 @@ export default {
             const items=this.paypolicytcitems
             const payload={tcsubtype_id:"Payment",trading_id:this.trading_id,mandatory:1,changeable:1,language_id:this.language_id,
             description:"Payment Methods available under the contract.",items:items,member_id:this.employer}
+            // console.log(payload)
             requester.ajax_request("/api/v1.0/create_payment_tc","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
+                // console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
             }).fail((jqXHR,textStatus,errorThrown) => {
@@ -1070,7 +1070,7 @@ export default {
         selectedexclusionitem(e){
             let val=e.target.value
             this.inclusionitems.forEach((item)=>{
-                if (item.name==val){
+                if (item.name.trim()==val.trim()){
                     this.exclusionitems.push(item)
                 }
             })
@@ -1289,6 +1289,7 @@ export default {
             this.catentryitems=copyitems
         },
         productsforcatalog(name,e){
+            // console.log(name,e)
             let tradeposcn_id;
             this.tradingpositions.forEach((item)=>{
                 if(item.name==name){
@@ -1300,6 +1301,7 @@ export default {
                 if(item.value==val){this.catalogname=item.text}
             })
             let payload={member_id:this.employer,language_id:this.language_id,catalog_id:val,tradeposcn_id:tradeposcn_id}
+            // console.log(payload)
             requester.ajax_request("/api/v1.0/trading_products_for_catalog","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 // console.log(result)
                 this.catentryitems=result

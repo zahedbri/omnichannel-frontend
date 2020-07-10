@@ -531,7 +531,7 @@ nav.navbar {
   }
   
   .side-navbar.shrink {
-    width: 70px;
+    width: auto;
     text-align: center;
   }
   
@@ -2716,6 +2716,10 @@ table {
   border-color:#e9ecef !important;
 }
 
+.border-transparent {
+  border-color: transparent !important;
+}
+
 .list-group-item.list-no-border {
 	border-top: none !important;
 	border-left: none !important;
@@ -2752,4 +2756,42 @@ table {
 
 div.tabs .card-header {
   background: #ffffff !important;
+}
+
+.modal-backdrop{
+  opacity:0.5 !important;
+}
+
+.card-close {
+  position:absolute;
+  bottom:5px;
+  right:5px;
+}
+
+div.dashboard-counts div[class*="col-"] .item {
+	border-right: 1px solid #eee;
+	padding: 15px 0;
+}
+
+div.dashboard-counts div[class*="col-"]:last-of-type .item {
+	border-right: none;
+}
+
+.counts-widget {
+  color:#A29D9D;
+}
+
+.counts-widget .number {
+  text-align: center;
+  font-size: 28.47px !important;
+  padding-top: 5.9px;
+  font-weight: bold;
+}
+
+.counts-widget .title {
+  text-align: center;
+  font-size: 14px;
+  height:16px;
+  font-weight: bold;
+  font-style: normal;
 }

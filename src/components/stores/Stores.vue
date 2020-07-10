@@ -6,7 +6,7 @@
                     <h1 class="breadcrumb">Store Management</h1>
                     <div>
                         <b-dropdown variant="primary" size="sm" right text="New Store">
-                            <b-dropdown-item v-b-modal.new-store-modal>Add new store</b-dropdown-item>
+                            <!-- <b-dropdown-item v-b-modal.new-store-modal>Add new store</b-dropdown-item> -->
                             <b-dropdown-item v-if="hostwarehouse" v-b-modal.new-warehouse-modal>Add host warehouse</b-dropdown-item>
                         </b-dropdown>
                     </div>
@@ -21,7 +21,7 @@
                             <b-card-body>
                                 <b-table show-empty striped hover :current-page="currentPage2" :per-page="perPage2" :items="yourstoresitems" :fields="yourstoresfields">
                                     <template v-slot:cell(image)="row">
-                                        <div class="d-flex justify-content-between">
+                                        <div v-if="row.item.storeent_id!=null" class="d-flex justify-content-between">
                                             <a href="#" style="margin-right:10px!important; width:45px!important; height:45px !important;">
                                                 <img v-if="row.item.image==null" class="img-fluid rounded" :src="defaultavatar">
                                                 <img v-else-if="row.item.image!=null" class="img-fluid rounded" :src="row.item.image">
@@ -32,7 +32,7 @@
                                         <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
                                     </template>
                                     <template v-slot:cell(view)="row">
-                                        <b-button @click="storedetails(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
+                                        <b-button v-if="row.item.storeent_id!=null" @click="storedetails(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
                                     </template>
                                     <template v-slot:cell(address)="row">
                                         <div class="content">
@@ -73,12 +73,18 @@
                             <b-card-body>
                                 <b-table show-empty striped hover :current-page="currentPage" :per-page="perPage" :items="allstoresitems" :fields="allstoresfields" :filter="filter" @filtered="onFiltered">
                                     <template v-slot:cell(image)="row">
-                                        <div class="d-flex justify-content-between">
+                                        <div v-if="row.item.storeent_id!=null" class="d-flex justify-content-between">
                                             <a href="#" style="margin-right:10px!important; width:45px!important; height:45px !important;">
                                                 <img v-if="row.item.image==null" class="img-fluid rounded" :src="defaultavatar">
                                                 <img v-else-if="row.item.image!=null" class="img-fluid rounded" :src="row.item.image">
                                             </a>
                                         </div>
+                                    </template>
+                                    <template v-slot:head(view)>
+                                        <b-button disabled class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
+                                    </template>
+                                    <template v-slot:cell(view)="row">
+                                        <b-button v-if="row.item.storeent_id!=null" @click="seestore(row)" class="dull-border2" variant="outline-secondary" type="button"><i class="fas fa-info-circle"></i></b-button>
                                     </template>
                                     <template v-slot:cell(address)="row">
                                         <div class="content">
@@ -481,7 +487,7 @@ export default {
                 middlename:null,lastname:null,persontitle:null,photourl:null,
             },
             allstoresitems:null,
-            allstoresfields:['image','address','city','state','country','email','phone','contact','type','currency'],
+            allstoresfields:['image','address','city','state','country','email','phone','contact','type','currency','view'],
             yourstoresitems:null,
             yourstoresfields:['image','address','city','state','country','email','phone','contact','type','currency','view'],
         }
@@ -517,7 +523,7 @@ export default {
             // console.log(result)
             this.allstoresitems=result
             this.totalRows=result.length
-            this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency']
+            this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
             return requester.ajax_request("/api/v1.0/your_stores","POST",this.ac_token,this.rf_token,true,{owner_id:this.employer})
         })
         yourstores.then(result => {
@@ -528,6 +534,10 @@ export default {
         })
     },
     methods:{
+        seestore(row){
+            let owner_id=row.item.member_id
+            this.$router.push({path:`/scaffolding/customerorders/${owner_id}`})
+        },
         formatPhone(value){
             const PNF=libphonenumber.PhoneNumberFormat
             const phoneUtil=libphonenumber.PhoneNumberUtil.getInstance()
@@ -653,7 +663,7 @@ export default {
                 console.log(result)
                 this.allstoresitems=result.allstores
                 this.totalRows=result.allstores.length
-                this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency']
+                this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
                 // this.$refs['new-store-modal'].hide()
             }).fail((jqXHR,textStatus,errorThrown) => {
                 console.log(jqXHR.responseJSON)
