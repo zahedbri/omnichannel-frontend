@@ -2,7 +2,7 @@
     <div>
         <div class="breadcrumb-holder">
             <b-container fluid>
-                <div class="d-flex  align-items-center justify-content-between">
+                <div class="d-flex align-items-center justify-content-between">
                     <h1 class="breadcrumb">Analytics Dashboard</h1>
                     <div>
                     </div>

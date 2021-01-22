@@ -11,7 +11,7 @@
                     </div>
                     <!-- Small Brand information, appears on minimized sidebar -->
                     <div class="sidenav-header-logo">
-                        <a href="#" class="brand-small text-center"><strong>PRONOV</strong><strong class="text-primary"></strong></a>
+                        <a href="#" class="brand-small text-center"><strong>ADMIN</strong><strong class="text-primary"></strong></a>
                     </div>
                 </div>
                 <!-- Sidebar Navigation menus -->
@@ -29,6 +29,7 @@
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/logistics')"> <i class="fas fa-shipping-fast mr-1"></i>Logistics</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/chartofaccounts')"><i class="fas fa-book mr-1"></i>Accounts</a></li>
                         <li class="c-pointer"><a @click="gotopath('/scaffolding/creditanalytics')"><i class="fas fa-coins mr-1"></i>Credit</a></li>
+                        <!-- <li class="c-pointer"><a @click="gotopath('/scaffolding/coop')"><i class="fas fa-users mr-1"></i>Co-op</a></li> -->
                     </ul>
                 </div>
             </div>
@@ -43,7 +44,7 @@
                                     <a id="toggle-btn" @click.prevent="activatesidebar" href="#" class="menu-btn"><i class="fas fa-bars"></i></a>
                                     <a href="#" class="navbar-brand">
                                         <div class="brand-text d-none d-md-inline-block">
-                                            <span class="mr-1">PRONOV &mdash;</span>
+                                            <span class="mr-1">ADMIN &mdash;</span>
                                             <strong class="text-primary">Dashboard</strong>
                                         </div>
                                     </a>
@@ -85,7 +86,9 @@
                     </b-container>
                 </nav>
             </header>
-            <router-view />
+            <transition name="fade" mode="out-in">
+                <router-view />
+            </transition>
         </div>
     </div>
 </template>

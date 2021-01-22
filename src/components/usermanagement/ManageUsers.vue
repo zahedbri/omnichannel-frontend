@@ -243,7 +243,7 @@ export default {
 
             userstableitems:[],
             allselected:null,
-            userstablefields:["username","identifier","role","employer","phone","email","status","action"],
+            userstablefields:["username","identifier","role","employer","phone","email","token","status","action"],
             mbrroleforms:[],
 
             employeroptions:[{value:null,text:'Select Employer'}],
@@ -274,9 +274,9 @@ export default {
             },
             customersignup:{
                 membertype:'O',
-                memberstate:0,
+                memberstate:1,
                 orgentitytype:'O',
-                registertype:'G',
+                registertype:'R',
                 profiletype:'C',
                 orgentityname:null,
                 logonid:null,
@@ -291,16 +291,14 @@ export default {
     created(){
         var verification=requester.ajax_request("/api/v1.0/user_identity","GET",this.ac_token,this.rf_token,false,null)
         var rolesdata=verification.then(result=>{
-            // console.log(result)
             return requester.ajax_request("/api/v1.0/list_roles","POST",this.ac_token,this.rf_token,true,{language_id:1})
         }).fail((jqXHR,textStatus,errorThrown) => {
-            // setTimeout(() => { this.$router.push({path:'/login'}) }, 3000);
+            setTimeout(() => { this.$router.push({path:'/login'}) }, 3000);
             console.log(jqXHR.responseJSON)
             console.log(textStatus)
             console.log(errorThrown)
         })
         var usersdata=rolesdata.then(result => {
-            console.log(result)
             result.forEach((item)=>{
                 this.roleoptions.push({value:item.role_id,text:item.displayname})
             })
@@ -311,6 +309,7 @@ export default {
             console.log(errorThrown)
         })
         usersdata.then(result => {
+            console.log(result)
             result.forEach((item)=>{
                 if(item.member.type=='O'){
                     this.allmemberoptions.push({value:item.orgentity.orgentity_id,text:item.orgentity.orgentityname})
@@ -322,11 +321,23 @@ export default {
             result.forEach((item)=>{
                 if(item.member.type=='O'){
                     this.userstableitems.push(
-                        {state:item.member.state,identifier:item.orgentity.orgentityname,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
+                        {state:item.member.state,identifier:item.orgentity.orgentityname,
+                        ismaster:item.ismaster,employerid:item.busprof.org_id,
+                        member_id:item.member.member_id,username:item.userreg.logonid,
+                        role:item.mbrrole[0].rolename,phone:item.address.phone1,
+                        email:item.address.email1,profile_type:item.users.profiletypestring,
+                        status:item.member.statestring,photo:item.userprof.photo,
+                        employer:item.mbrrole[0].organization,token:item.userreg.token})
                 }
                 if(item.member.type=='U'){
                     this.userstableitems.push(
-                        {state:item.member.state,identifier:item.users.field1+' '+item.users.field2+' '+item.users.field3,ismaster:item.ismaster,employerid:item.busprof.org_id,member_id:item.member.member_id,username:item.userreg.logonid,role:item.mbrrole[0].rolename,phone:item.address.phone1,email:item.address.email1,profile_type:item.users.profiletypestring,status:item.member.statestring,photo:item.userprof.photo,employer:item.mbrrole[0].organization})
+                        {state:item.member.state,identifier:item.users.field1+' '+item.users.field2+' '+item.users.field3,
+                        ismaster:item.ismaster,employerid:item.busprof.org_id,
+                        member_id:item.member.member_id,username:item.userreg.logonid,
+                        role:item.mbrrole[0].rolename,phone:item.address.phone1,
+                        email:item.address.email1,profile_type:item.users.profiletypestring,
+                        status:item.member.statestring,photo:item.userprof.photo,
+                        employer:item.mbrrole[0].organization,token:item.userreg.token})
                 }
             })
             this.totalRows=this.userstableitems.length
@@ -479,7 +490,7 @@ export default {
         },
         addnewstaff(){
             const payload={...this.newstaff}
-            console.log(payload)
+            // console.log(payload)
             requester.ajax_request("/api/v1.0/create_business_user","POST",this.ac_token,this.rf_token,true,payload).done(result => {
                 console.log(result)
                 this.success_message=result.msg

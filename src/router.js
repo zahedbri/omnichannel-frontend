@@ -37,6 +37,7 @@ import OrderItems from './components/orders/OrderItems.vue'
 import CreditAnalytics from './components/dashboard/CreditAnalytics.vue'
 import CustomerOrders from './components/customers/CustomerOrders.vue'
 import CustomerOrderItems from './components/customers/CustomerOrderItems.vue'
+import Coop from './components/dashboard/Coop.vue'
 
 Vue.use(Router)
 
@@ -218,6 +219,11 @@ export default new Router({
                     path:'customerorderitems/:orders_id',
                     name:'customerorderitems',
                     component:CustomerOrderItems
+                },
+                {
+                    path:'coop',
+                    name:'coop',
+                    component:Coop
                 }
             ]
         }

@@ -62,7 +62,7 @@
                                 <b-row>
                                     <b-col sm="12" md="12">
                                         <div class="form-group mb-4">
-                                            <label class="form-label">Language Preference</label>
+                                            <label class="form-label">Product Owner</label>
                                             <b-form-select size="sm" @change="changedorg" v-model="upload.orgentity_id" :options="orglist"></b-form-select>
                                         </div>
                                     </b-col>

@@ -134,7 +134,7 @@
                                 </b-row>
                             </b-card-body>
                             <b-card-footer class="text-right">
-                                <button class="btn btn-primary btn-sm" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
+                                <button class="btn btn-success btn-sm" type="submit"><i class="fas fa-save mr-1"></i>Save</button>
                             </b-card-footer>
                         </form>
                     </b-col>
@@ -214,10 +214,15 @@ export default {
             return requester.ajax_request("/api/v1.0/read_ra","POST",this.ac_token,this.rf_token,true,{member_id:this.employer})
         })
         var receiptsdata=radata.then(result=>{
-            // console.log(result)
-            this.raitems=result
-            this.rafields=['PO_Number','vendor','store','created','ordered','open','closed','_']
-            this.totalRows=result.length
+            if(result.length > 0 && result[0].ra_id==null){
+                this.raitems=null
+                this.rafields=['PO_Number','vendor','store','created','ordered','open','closed','_']
+                this.totalRows=0
+            }else if(result.length > 0 && result[0].ra_id != null){
+                this.raitems=result
+                this.rafields=['PO_Number','vendor','store','created','ordered','open','closed','_']
+                this.totalRows=result.length
+            }
             return requester.ajax_request("/api/v1.0/read_receipts","GET",this.ac_token,this.rf_token,false,null)
         })
         receiptsdata.then(result=>{

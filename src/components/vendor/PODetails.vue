@@ -329,10 +329,16 @@ export default {
             return requester.ajax_request("/api/v1.0/read_ra_detail","POST",this.ac_token,this.rf_token,true,{ra_id:this.ra_id})
         })
         var ffmdata=detailsdata.then(result=>{
-            // console.log(result)
-            this.detailsitems=result
-            this.totalRows2=result.length
-            this.detailsfields=['warehouse','item','ordered','received','remaining','allocated','expected_on','updated_on','_']
+            if(result.length > 0 && result[0].radetail_id==null){
+                this.detailsitems=null
+                this.totalRows2=0
+                this.detailsfields=['warehouse','item','ordered','received','remaining','allocated','expected_on','updated_on','_']
+            }
+            else if(result.length > 0 && result[0].radetail_id!=null){
+                this.detailsitems=result
+                this.totalRows2=result.length
+                this.detailsfields=['warehouse','item','ordered','received','remaining','allocated','expected_on','updated_on','_']
+            }
             return requester.ajax_request("/api/v1.0/read_ffmcenter","POST",this.ac_token,this.rf_token,true,{member_id:this.employer})
         })
         var catentrydata=ffmdata.then(result=>{
@@ -373,9 +379,9 @@ export default {
         submitreceipt(){
             const payload={...this.receipt}
             payload.member_id=this.employer
-            console.log(payload)
+            // console.log(payload)
             requester.ajax_request("/api/v1.0/inventory_receipt","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
-                console.log(result)
+                // console.log(result)
                 this.success_message=result.msg
                 this.showSnackbar=true
                 this.openindicator=result.indicator
@@ -433,7 +439,8 @@ export default {
                 this.receipt.ffmcenter_id=result.ffmcenter_id
                 this.receipt.vendor_id=result.vendor_id
                 // TODO nullify receiptdate so this sets a new record
-                // this.receipt.receiptdate=result.receiptdate.split(' ')[0]
+                // console.log(result.receiptdate)
+                this.receipt.receiptdate=result.receiptdate.split(' ')[0]
                 this.receipt.qtyremaining=result.qtyremaining
                 // this.receipt.qtyreceived=result.qtyreceived
                 this.receipt.qtyinprocess=result.qtyinprocess

@@ -104,8 +104,12 @@ export default {
             console.log(errorThrown)
         })
         ordersdata.then(result=>{
-            this.ordersitems=result
-            this.totalRows=result.length;
+            if(result.length > 0 && result[0].orders_id==null){
+                this.ordersitems=null;this.totalRows=0
+            }else{
+                this.ordersitems=result
+                this.totalRows=result.length;
+            }
         })
     },
     methods:{

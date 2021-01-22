@@ -1,6 +1,6 @@
 import * as JQuery from "jquery"
-const baseurl="http://127.0.0.1:5000"
-// const baseurl="https://pronovapp.com"
+// const baseurl="http://127.0.0.1:5000"
+const baseurl="https://pronovapp.com/pronov"
 const smstoken="O7csPy8LWqUqvg3qBrIuPOS33T4olZt63GilMSQxo5dPnEDQTHQcGcZDMRoh"
 const smsbase="https://www.bulksmsnigeria.com/api/v1/sms/create"
 export default {

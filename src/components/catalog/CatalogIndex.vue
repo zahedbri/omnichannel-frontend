@@ -248,7 +248,6 @@
                 </b-row>
             </b-container>
         </b-modal>
-
         <b-modal ref="edit-item-modal" size="lg" id="edit-item-modal" hide-footer>
             <template v-slot:modal-header>
                 <h5>Edit Inventory Item</h5>
@@ -436,8 +435,6 @@
                 </b-row>
             </b-container>
         </b-modal>
-
-
         <b-modal ref="new-item-modal" size="lg" id="new-item-modal" hide-footer>
             <template v-slot:modal-header>
                 <h5>Add Inventory Item</h5>
@@ -984,6 +981,12 @@ export default {
             requester.ajax_request("/api/v1.0/update_catentry","POST",this.ac_token,this.rf_token,true,payload).done(result=>{
                 this.success_message=result.msg
                 this.showSnackbar=true
+                
+                this.catentryitems=result.catentryitems
+                this.attrform.catentry_id=result.entries[0].catentry_id
+                this.catentries=result.entries
+
+                this.$refs['edit-item-modal'].hide()
             }).fail((jqXHR,textStatus,errorThrown) => {
                 this.success_message=jqXHR.responseJSON.msg
                 this.showSnackbar=true
@@ -1032,7 +1035,7 @@ export default {
                 console.log(textStatus)
                 console.log(errorThrown)
             })
-        },        
+        },
         changeview(v){
             if(v=="g"){this.isgrid=true;this.islist=false;}
             else if(v=="l"){this.isgrid=true;this.islist=false;}

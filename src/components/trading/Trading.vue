@@ -2,7 +2,7 @@
     <div>
         <div class="breadcrumb-holder">
             <b-container fluid>
-                <div class="d-flex  align-items-center justify-content-between">
+                <div class="d-flex align-items-center justify-content-between">
                     <h1 class="breadcrumb">Procurement &amp; Sales Trading Agreements</h1>
                     <div>
                         <b-dropdown variant="success" size="sm" right text="Create">
@@ -401,10 +401,15 @@ export default {
             return requester.ajax_request("/api/v1.0/read_all_trading","POST",this.ac_token,this.rf_token,true,{language_id:this.language_id})
         })
         var contractdefaults=contractlist.then(result => {
-            // console.log(result)
-            this.contractlistitems=result
-            this.totalRows=result.length
-            this.contractlistfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
+            if(result.length > 0 && result[0].trading_id==null){
+                this.contractlistitems=null
+                this.totalRows=0
+                this.contractlistfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
+            }else if(result.length > 0 && result[0].trading_id!=null){
+                this.contractlistitems=result
+                this.totalRows=result.length
+                this.contractlistfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
+            }
             return requester.ajax_request("/api/v1.0/contract_defaults","GET",this.ac_token,this.rf_token,false,null)
         })
         var storedata=contractdefaults.then(result=>{
@@ -433,8 +438,14 @@ export default {
             return requester.ajax_request("/api/v1.0/read_default_contracts","POST",this.ac_token,this.rf_token,true,{member_id:this.employer,language_id:this.language_id})
         })
         defaultcontractdata.then(result => {
-            this.defaultcontractitems=result
-            this.defaultcontractfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
+            if(result.length > 0 && result[0].trading_id==null){
+                this.defaultcontractitems=null
+                this.defaultcontractfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
+            }
+            else if(result.length > 0 && result[0].trading_id !=null){
+                this.defaultcontractitems=result
+                this.defaultcontractfields=['contract_title','type','created','created_by','credit','starting','ending','stage','state','view']
+            }
         })
     },
     methods:{

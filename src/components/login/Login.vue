@@ -6,7 +6,7 @@
                     <div class="header-body text-center mb-7">
                         <div class="row justify-content-center">
                             <div class="col-lg-5 col-md-6">
-                                <h1 class="text-grey">Sign In</h1>
+                                <h1 class="text-gray">Sign In</h1>
                                 <p class="text-lead text-light-gray">
                                     Sign into your organization account.
                                 </p>
@@ -48,7 +48,7 @@
                                 <router-link to="/login" class="text-light"><small>Forgot password?</small></router-link>
                             </div>
                             <div class="col-6 text-right">
-                                <router-link to="/signup" class="text-light"><small>Create new account</small></router-link>
+                                <!-- <router-link to="/signup" class="text-light"><small>Create new account</small></router-link> -->
                             </div>
                         </div>
                     </div>

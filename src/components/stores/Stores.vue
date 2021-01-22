@@ -513,25 +513,37 @@ export default {
             })
             return requester.ajax_request("/api/v1.0/list_storeorgs","GET",this.ac_token,this.rf_token,false,null)
         })
-        var allstores=storeorgdata.then(result => {
+        var yourstores=storeorgdata.then(result => {
             result.forEach((item)=>{
                 this.storeorgs.push({value:item.users_id,text:item.orgentityname})
             })
-            return requester.ajax_request("/api/v1.0/read_stores","POST",this.ac_token,this.rf_token,true,{owner_id:this.employer})
-        })
-        var yourstores=allstores.then(result => {
-            // console.log(result)
-            this.allstoresitems=result
-            this.totalRows=result.length
-            this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
             return requester.ajax_request("/api/v1.0/your_stores","POST",this.ac_token,this.rf_token,true,{owner_id:this.employer})
         })
-        yourstores.then(result => {
+        var allstores=yourstores.then(result => {
             // console.log(result)
-            this.yourstoresitems=result
-            this.totalRows2=result.length
-            this.yourstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
+            if(result.length && result[0].storeent_id==null){
+                this.yourstoresitems=null
+                this.totalRows2=0
+                this.yourstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
+            }else if(result.length > 0 && result[0].storeent_id!=null){
+                this.yourstoresitems=result
+                this.totalRows2=result.length
+                this.yourstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
+            }
+            return requester.ajax_request("/api/v1.0/read_stores","POST",this.ac_token,this.rf_token,true,{owner_id:this.employer})
         })
+        allstores.then(result => {
+            if(result.length > 0 && result[0].storeent_id==null){
+                this.allstoresitems=null
+                this.totalRows=0
+                this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
+            }else if(result.length > 0 && result[0].storeent_id!=null){
+                this.allstoresitems=result
+                this.totalRows=result.length
+                this.allstoresfields=['image','address','city','state','country','email','phone','contact','type','currency','view']
+            }            
+        })
+
     },
     methods:{
         seestore(row){
